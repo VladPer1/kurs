@@ -1,0 +1,525 @@
+{
+  "info": {
+    "_postman_id": "c7a8b912-3456-4abc-9def-coursemanagementapi01",
+    "name": "Course & Training Management System API (ИПР №1)",
+    "description": "Полная коллекция запросов для сдачи лабораторной работы ИПР №1. Включает эндпоинты аутентификации, динамического RBAC, курсов, записей, шифрования карт AES-256, платежей, мониторинга и автоматические тесты безопасности (400, 401, 403, 423).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "studentAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "courseId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "enrollmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cardId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Security (OWASP)",
+      "item": [
+        {
+          "name": "Register New Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set(\"studentAccessToken\", jsonData.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test_student_{{$timestamp}}@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Петр Тестовый\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Admin login successful (200)\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.expect(jsonData.success).to.be.true;",
+                  "pm.collectionVariables.set(\"accessToken\", jsonData.data.accessToken);",
+                  "pm.environment.set(\"accessToken\", jsonData.data.accessToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@course-platform.local\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Student login successful (200)\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"studentAccessToken\", jsonData.data.accessToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@course-platform.local\",\n  \"password\": \"StudentPassword123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          }
+        },
+        {
+          "name": "[Negative Test] Register with Invalid Email (Expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Validation error 400 received\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql(\"VALIDATION_ERROR\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email-format\",\n  \"password\": \"short\",\n  \"full_name\": \"\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "[Negative Test] Brute-force Password (Expect 401 / 423)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Returns 401 or 423 Account Locked\", function () {",
+                  "    pm.expect([401, 423]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@course-platform.local\",\n  \"password\": \"WrongPassword!!!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Dynamic RBAC (Roles & Permissions)",
+      "item": [
+        {
+          "name": "List All Roles (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "List All Permissions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/permissions", "host": ["{{baseUrl}}"], "path": ["permissions"] }
+          }
+        },
+        {
+          "name": "Create New Role (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"mentor_{{$timestamp}}\",\n  \"description\": \"Наставник учебных групп с доступом к проверке заданий\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "[Negative Test] Student attempts to access /roles (Expect 403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Access Forbidden with 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql(\"FORBIDDEN_INSUFFICIENT_PERMISSIONS\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Instructors Management",
+      "item": [
+        {
+          "name": "Public List Instructors",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/instructors", "host": ["{{baseUrl}}"], "path": ["instructors"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Courses Catalog & Management",
+      "item": [
+        {
+          "name": "Get Public Courses Catalog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Courses retrieved successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"courseId\", json.data[0].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/courses?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Course Details by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/courses/{{courseId}}", "host": ["{{baseUrl}}"], "path": ["courses", "{{courseId}}"] }
+          }
+        },
+        {
+          "name": "Create New Course (Admin/Instructor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Безопасный DevOps и SecOps в облаке\",\n  \"description\": \"Практический интенсив по сканированию уязвимостей, SAST/DAST и hardening Linux.\",\n  \"price\": 21500.00,\n  \"start_date\": \"2026-12-01T10:00:00Z\",\n  \"max_seats\": 25,\n  \"status\": \"published\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          }
+        },
+        {
+          "name": "[Negative Test] Student attempts to create Course (Expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Несанкционированный курс\",\n  \"description\": \"Попытка студента создать курс\",\n  \"price\": 1000,\n  \"start_date\": \"2026-12-01T10:00:00Z\",\n  \"max_seats\": 10\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Enrollments (Course Bookings)",
+      "item": [
+        {
+          "name": "Enroll in Course (Student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Enrollment response 201 or 409\", function () {",
+                  "    pm.expect([201, 409]).to.include(pm.response.code);",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.id) {",
+                  "        pm.collectionVariables.set(\"enrollmentId\", json.data.id);",
+                  "    } else if (json.error && json.error.enrollmentId) {",
+                  "        pm.collectionVariables.set(\"enrollmentId\", json.error.enrollmentId);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course_id\": \"{{courseId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/enrollments", "host": ["{{baseUrl}}"], "path": ["enrollments"] }
+          }
+        },
+        {
+          "name": "Get My Enrollments (Student)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/enrollments/my", "host": ["{{baseUrl}}"], "path": ["enrollments", "my"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Bank Cards & AES-256 Encryption",
+      "item": [
+        {
+          "name": "Add Card with AES-256-GCM Encryption",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Card bound successfully (201)\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.last4).to.eql(\"4242\");",
+                  "    pm.expect(json.data.encrypted_payload).to.be.undefined;",
+                  "    pm.collectionVariables.set(\"cardId\", json.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_number\": \"4242424242424242\",\n  \"card_holder\": \"IVAN PETROV\",\n  \"exp_month\": 12,\n  \"exp_year\": 2028,\n  \"cvv\": \"123\",\n  \"is_default\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/cards", "host": ["{{baseUrl}}"], "path": ["cards"] }
+          }
+        },
+        {
+          "name": "List Saved Cards (Safe View)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/cards", "host": ["{{baseUrl}}"], "path": ["cards"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Payments & Checkout",
+      "item": [
+        {
+          "name": "Checkout Enrollment Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enrollment_id\": \"{{enrollmentId}}\",\n  \"payment_method_id\": \"{{cardId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments/checkout", "host": ["{{baseUrl}}"], "path": ["payments", "checkout"] }
+          }
+        },
+        {
+          "name": "Get My Payments History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/payments/my", "host": ["{{baseUrl}}"], "path": ["payments", "my"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. System Monitoring (Health & Metrics)",
+      "item": [
+        {
+          "name": "Health Check (/system/health)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"System is UP (200)\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"UP\");",
+                  "    pm.expect(json.database).to.eql(\"connected\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/system/health", "host": ["{{baseUrl}}"], "path": ["system", "health"] }
+          }
+        },
+        {
+          "name": "System Metrics & Audit Logs (/system/metrics)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/system/metrics", "host": ["{{baseUrl}}"], "path": ["system", "metrics"] }
+          }
+        }
+      ]
+    }
+  ]
+}
