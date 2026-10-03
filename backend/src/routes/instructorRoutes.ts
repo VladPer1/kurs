@@ -8,6 +8,6 @@ const router = Router();
 router.get('/', InstructorController.getAll);
 router.get('/:id', InstructorController.getById);
 router.post('/', authenticate, hasPermission('instructors:manage'), InstructorController.create);
-router.put('/:id', authenticate, InstructorController.update);
+router.put('/:id', authenticate, hasPermission('instructors:manage'), InstructorController.update);
 
 export default router;

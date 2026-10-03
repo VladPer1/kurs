@@ -11,7 +11,7 @@ export class SystemController {
   /**
    * GET /api/v1/system/health
    */
-  static async health(req: Request, res: Response): Promise<void> {
+  static async health(_req: Request, res: Response): Promise<void> {
     try {
       await sequelize.authenticate();
       res.status(200).json({
@@ -33,7 +33,7 @@ export class SystemController {
   /**
    * GET /api/v1/system/metrics
    */
-  static async metrics(req: Request, res: Response): Promise<void> {
+  static async metrics(_req: Request, res: Response): Promise<void> {
     const memory = process.memoryUsage();
 
     res.status(200).json({

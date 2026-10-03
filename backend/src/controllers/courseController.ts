@@ -117,8 +117,9 @@ export class CourseController {
 
     let targetInstructorId = instructor_id;
 
-    // If caller is an instructor, resolve their instructor_id automatically
-    if (!targetInstructorId || req.user?.role !== 'admin') {
+    // If caller has instructors:manage, they can assign any instructor_id, otherwise resolve their own instructor_id
+    const canManageAllInstructors = req.user?.permissions?.includes('instructors:manage');
+    if (!targetInstructorId || !canManageAllInstructors) {
       const instructorProfile = await Instructor.findOne({ where: { user_id: req.user?.userId } });
       if (!instructorProfile) {
         res.status(403).json({
@@ -171,8 +172,9 @@ export class CourseController {
       return;
     }
 
-    // Check ownership: must be author instructor or admin
-    if (req.user?.role !== 'admin') {
+    // Check ownership: must be author instructor or have instructors:manage / courses:delete privilege
+    const canManageAnyCourse = req.user?.permissions?.includes('instructors:manage') || req.user?.permissions?.includes('courses:delete');
+    if (!canManageAnyCourse) {
       const instructorProfile = await Instructor.findOne({ where: { user_id: req.user?.userId } });
       if (!instructorProfile || course.instructor_id !== instructorProfile.id) {
         res.status(403).json({
@@ -223,7 +225,8 @@ export class CourseController {
       return;
     }
 
-    if (req.user?.role !== 'admin') {
+    const canDeleteAnyCourse = req.user?.permissions?.includes('instructors:manage') || req.user?.permissions?.includes('users:manage_roles');
+    if (!canDeleteAnyCourse) {
       const instructorProfile = await Instructor.findOne({ where: { user_id: req.user?.userId } });
       if (!instructorProfile || course.instructor_id !== instructorProfile.id) {
         res.status(403).json({

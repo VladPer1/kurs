@@ -7,7 +7,7 @@ export class InstructorController {
    * GET /api/v1/instructors
    * Public list of instructors with rating and courses
    */
-  static async getAll(req: Request, res: Response): Promise<void> {
+  static async getAll(_req: Request, res: Response): Promise<void> {
     const instructors = await Instructor.findAll({
       include: [
         {
@@ -130,8 +130,9 @@ export class InstructorController {
       return;
     }
 
-    // Check if requester is owner of profile or admin
-    if (req.user?.role !== 'admin' && req.user?.userId !== instructor.user_id) {
+    // Check if requester has instructors:manage permission or is owner of profile
+    const canManageAllInstructors = req.user?.permissions?.includes('instructors:manage');
+    if (!canManageAllInstructors && req.user?.userId !== instructor.user_id) {
       res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'Вы можете редактировать только собственный профиль преподавателя.' },
@@ -142,7 +143,7 @@ export class InstructorController {
     await instructor.update({
       bio: bio !== undefined ? bio : instructor.bio,
       specialization: specialization !== undefined ? specialization : instructor.specialization,
-      rating: rating !== undefined && req.user?.role === 'admin' ? parseFloat(rating) : instructor.rating,
+      rating: rating !== undefined && canManageAllInstructors ? parseFloat(rating) : instructor.rating,
     });
 
     res.status(200).json({

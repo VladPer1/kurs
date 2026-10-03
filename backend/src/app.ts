@@ -44,7 +44,7 @@ export function createExpressApp(): express.Application {
   app.use(cookieParser());
 
   // 4. Global metrics increment
-  app.use((req, res, next) => {
+  app.use((_req, _res, next) => {
     incrementRequestCounter();
     next();
   });
@@ -53,7 +53,7 @@ export function createExpressApp(): express.Application {
   app.use('/api/', apiGlobalLimiter);
 
   // 6. Swagger Documentation endpoints
-  app.get('/api/docs/json', (req, res) => {
+  app.get('/api/docs/json', (_req, res) => {
     res.json(swaggerDocument);
   });
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {

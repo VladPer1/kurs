@@ -190,7 +190,7 @@ export const swaggerDocument = {
         tags: ['Dynamic RBAC'],
         security: [{ bearerAuth: [] }],
         summary: 'Получить список всех ролей',
-        description: 'Требуется разрешение roles:manage (или роль admin).',
+        description: 'Требуется атомарное разрешение roles:manage.',
         responses: {
           200: { description: 'Список ролей с вложенными правами' },
           403: { description: 'Доступ запрещен' },

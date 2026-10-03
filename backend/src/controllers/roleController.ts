@@ -6,7 +6,7 @@ export class RoleController {
    * GET /api/v1/roles
    * List all roles with associated permissions
    */
-  static async getAllRoles(req: Request, res: Response): Promise<void> {
+  static async getAllRoles(_req: Request, res: Response): Promise<void> {
     const roles = await Role.findAll({
       include: [
         {
@@ -64,7 +64,7 @@ export class RoleController {
    * GET /api/v1/permissions
    * List all system permissions
    */
-  static async getAllPermissions(req: Request, res: Response): Promise<void> {
+  static async getAllPermissions(_req: Request, res: Response): Promise<void> {
     const permissions = await Permission.findAll({
       order: [['slug', 'ASC']],
     });

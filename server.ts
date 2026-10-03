@@ -16,7 +16,7 @@ async function startServer() {
     const app = createExpressApp();
 
     // Endpoint for direct download of Postman collection
-    app.get('/api/postman-collection', (req, res) => {
+    app.get('/api/postman-collection', (_req, res) => {
       const postmanFilePath = path.resolve(process.cwd(), 'postman', 'course_management_api.json');
       if (fs.existsSync(postmanFilePath)) {
         res.setHeader('Content-Type', 'application/json');

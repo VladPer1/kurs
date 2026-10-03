@@ -72,6 +72,7 @@ export async function seedDatabase(): Promise<void> {
 
     // Instructor permissions
     const instructorSlugs = [
+      'instructors:manage',
       'courses:create',
       'courses:edit',
       'courses:delete',

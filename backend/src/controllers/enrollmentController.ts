@@ -143,9 +143,10 @@ export class EnrollmentController {
    */
   static async getForInstructor(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
+    const canViewAll = req.user?.permissions?.includes('courses:view_all');
 
     const instructor = await Instructor.findOne({ where: { user_id: userId } });
-    if (!instructor && req.user?.role !== 'admin') {
+    if (!instructor && !canViewAll) {
       res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'У вас нет профиля преподавателя.' },
@@ -153,7 +154,7 @@ export class EnrollmentController {
       return;
     }
 
-    const courseWhere = req.user?.role === 'admin' ? {} : { instructor_id: instructor?.id };
+    const courseWhere = canViewAll ? {} : { instructor_id: instructor?.id };
 
     const enrollments = await Enrollment.findAll({
       include: [
@@ -198,8 +199,9 @@ export class EnrollmentController {
       return;
     }
 
-    // Must be own enrollment or admin
-    if (req.user?.role !== 'admin' && enrollment.user_id !== userId) {
+    // Must be own enrollment or user with permission courses:delete / users:manage_roles
+    const canCancelAnyEnrollment = req.user?.permissions?.includes('courses:delete') || req.user?.permissions?.includes('users:manage_roles');
+    if (!canCancelAnyEnrollment && enrollment.user_id !== userId) {
       res.status(403).json({
         success: false,
         error: { code: 'FORBIDDEN', message: 'Вы можете отменять только свои записи.' },
