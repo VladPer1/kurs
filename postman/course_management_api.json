@@ -264,6 +264,37 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
             "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
           }
+        },
+        {
+          "name": "List All Users with Courses (Admin only - users:view_all)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "[Negative Test] Student attempts to list Users (Expect 403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Access Forbidden with 403 for Student\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql(\"FORBIDDEN_INSUFFICIENT_PERMISSIONS\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
         }
       ]
     },
@@ -275,6 +306,14 @@
           "request": {
             "method": "GET",
             "url": { "raw": "{{baseUrl}}/instructors", "host": ["{{baseUrl}}"], "path": ["instructors"] }
+          }
+        },
+        {
+          "name": "Get My Enrolled Students (Instructor - instructors:view_students)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/instructors/my/students", "host": ["{{baseUrl}}"], "path": ["instructors", "my", "students"] }
           }
         }
       ]
@@ -482,6 +521,14 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{studentAccessToken}}" }],
             "url": { "raw": "{{baseUrl}}/payments/my", "host": ["{{baseUrl}}"], "path": ["payments", "my"] }
+          }
+        },
+        {
+          "name": "List All Platform Payments (Admin only - payments:view_all)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
           }
         }
       ]

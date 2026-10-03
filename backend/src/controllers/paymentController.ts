@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { Payment, Enrollment, Course, PaymentMethod } from '../models/index.js';
+import { Payment, Enrollment, Course, PaymentMethod, User } from '../models/index.js';
 import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { sequelize } from '../config/database.js';
 
@@ -141,6 +141,48 @@ export class PaymentController {
     res.status(200).json({
       success: true,
       data: payments,
+    });
+  }
+
+  /**
+   * GET /api/v1/payments
+   * List all platform payments (Admin only)
+   * Requires permission: payments:view_all
+   */
+  static async getAllPayments(_req: AuthenticatedRequest, res: Response): Promise<void> {
+    const payments = await Payment.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'full_name', 'email'],
+        },
+        {
+          model: Enrollment,
+          as: 'enrollment',
+          include: [
+            {
+              model: Course,
+              as: 'course',
+              attributes: ['id', 'title', 'price'],
+            },
+          ],
+        },
+        {
+          model: PaymentMethod,
+          as: 'payment_method',
+          attributes: ['id', 'last4', 'card_holder'],
+        },
+      ],
+      order: [['paid_at', 'DESC']],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        total: payments.length,
+        payments,
+      },
     });
   }
 }

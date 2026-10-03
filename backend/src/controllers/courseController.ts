@@ -263,4 +263,78 @@ export class CourseController {
       message: 'Курс успешно удален.',
     });
   }
+
+  /**
+   * GET /api/v1/courses/:id/students
+   * Get students enrolled in a specific course
+   * Requires permission: courses:view_students
+   */
+  static async getCourseStudents(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    const course = await Course.findByPk(id, {
+      include: [
+        {
+          model: Instructor,
+          as: 'instructor',
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'full_name', 'email'],
+            },
+          ],
+        },
+        {
+          model: Enrollment,
+          as: 'enrollments',
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'full_name', 'email', 'created_at'],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!course) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'COURSE_NOT_FOUND', message: 'Курс не найден.' },
+      });
+      return;
+    }
+
+    const canViewAll = req.user?.permissions?.includes('users:view_all') || req.user?.permissions?.includes('courses:view_all');
+    if (!canViewAll && course.instructor?.user_id !== req.user?.userId) {
+      res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Вы можете просматривать список студентов только для своих курсов.' },
+      });
+      return;
+    }
+
+    const students = ((course as any).enrollments || []).map((enrollment: any) => ({
+      enrollment_id: enrollment.id,
+      user_id: enrollment.user?.id,
+      full_name: enrollment.user?.full_name,
+      email: enrollment.user?.email,
+      status: enrollment.status,
+      enrolled_at: enrollment.enrolled_at,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        course_id: course.id,
+        course_title: course.title,
+        status: course.status,
+        max_seats: course.max_seats,
+        available_seats: course.available_seats,
+        students_count: students.length,
+        students,
+      },
+    });
+  }
 }

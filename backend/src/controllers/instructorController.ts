@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Instructor, User, Course, Role } from '../models/index.js';
+import { Instructor, User, Course, Role, Enrollment } from '../models/index.js';
 import { AuthenticatedRequest } from '../middleware/authJwt.js';
 
 export class InstructorController {
@@ -150,6 +150,101 @@ export class InstructorController {
       success: true,
       message: 'Профиль преподавателя успешно обновлен.',
       data: instructor,
+    });
+  }
+
+  /**
+   * GET /api/v1/instructors/my/students
+   * Get all students enrolled in the instructor's courses
+   * Requires permission: instructors:view_students
+   */
+  static async getMyStudents(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const userId = req.user?.userId;
+    const canViewAll = req.user?.permissions?.includes('users:view_all');
+
+    let instructorId: string | undefined;
+
+    if (canViewAll && req.query.instructor_id) {
+      instructorId = String(req.query.instructor_id);
+    } else {
+      const instructor = await Instructor.findOne({ where: { user_id: userId } });
+      if (!instructor) {
+        res.status(403).json({
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'У вас нет профиля преподавателя.' },
+        });
+        return;
+      }
+      instructorId = instructor.id;
+    }
+
+    const courses = await Course.findAll({
+      where: { instructor_id: instructorId },
+      include: [
+        {
+          model: Enrollment,
+          as: 'enrollments',
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'full_name', 'email', 'created_at'],
+            },
+          ],
+        },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    const studentsMap = new Map<string, any>();
+    const courseSummaries = courses.map((course: any) => {
+      const courseEnrollments = (course.enrollments || []).map((enrollment: any) => {
+        const studentInfo = {
+          student_id: enrollment.user?.id,
+          full_name: enrollment.user?.full_name,
+          email: enrollment.user?.email,
+          enrollment_id: enrollment.id,
+          course_id: course.id,
+          course_title: course.title,
+          status: enrollment.status,
+          enrolled_at: enrollment.enrolled_at,
+        };
+
+        if (enrollment.user?.id && !studentsMap.has(enrollment.user.id)) {
+          studentsMap.set(enrollment.user.id, {
+            id: enrollment.user.id,
+            full_name: enrollment.user.full_name,
+            email: enrollment.user.email,
+            courses_count: 1,
+            enrolled_courses: [{ course_id: course.id, course_title: course.title, status: enrollment.status }],
+          });
+        } else if (enrollment.user?.id) {
+          const existing = studentsMap.get(enrollment.user.id);
+          existing.courses_count += 1;
+          existing.enrolled_courses.push({ course_id: course.id, course_title: course.title, status: enrollment.status });
+        }
+
+        return studentInfo;
+      });
+
+      return {
+        course_id: course.id,
+        course_title: course.title,
+        status: course.status,
+        max_seats: course.max_seats,
+        available_seats: course.available_seats,
+        students_enrolled_count: courseEnrollments.length,
+        students: courseEnrollments,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        total_unique_students: studentsMap.size,
+        courses: courseSummaries,
+        students: Array.from(studentsMap.values()),
+      },
     });
   }
 }

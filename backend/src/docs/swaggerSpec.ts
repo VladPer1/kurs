@@ -286,6 +286,49 @@ export const swaggerDocument = {
         },
       },
     },
+    '/users': {
+      get: {
+        tags: ['Users & Administration'],
+        security: [{ bearerAuth: [] }],
+        summary: 'Просмотр всех пользователей системы с их курсами (Только Администратор)',
+        description: 'Требуется атомарное разрешение users:view_all. Возвращает список всех зарегистрированных пользователей, их роли, статус блокировки, список курсов (на которые они записаны как студенты или которые они преподают).',
+        parameters: [
+          { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Поиск по имени или email' },
+          { name: 'role', in: 'query', schema: { type: 'string' }, description: 'Фильтр по роли (admin, instructor, student)' },
+        ],
+        responses: {
+          200: { description: 'Список пользователей с курсами' },
+          403: { description: 'Доступ запрещен (требуется users:view_all)' },
+        },
+      },
+    },
+    '/users/{id}': {
+      get: {
+        tags: ['Users & Administration'],
+        security: [{ bearerAuth: [] }],
+        summary: 'Получить профиль пользователя с его курсами по ID (Только Администратор)',
+        description: 'Требуется атомарное разрешение users:view_all.',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          200: { description: 'Детали пользователя с курсами' },
+          404: { description: 'Пользователь не найден' },
+        },
+      },
+    },
+    '/instructors/my/students': {
+      get: {
+        tags: ['Instructors'],
+        security: [{ bearerAuth: [] }],
+        summary: 'Просмотр студентов, записанных на курсы текущего преподавателя',
+        description: 'Требуется разрешение instructors:view_students. Возвращает список всех студентов, записанных на курсы преподавателя, с разбивкой по курсам и сводной статистикой.',
+        responses: {
+          200: { description: 'Список студентов преподавателя' },
+          403: { description: 'У пользователя нет профиля преподавателя' },
+        },
+      },
+    },
     '/instructors': {
       get: {
         tags: ['Instructors'],
@@ -420,6 +463,19 @@ export const swaggerDocument = {
         },
       },
     },
+    '/courses/{id}/students': {
+      get: {
+        tags: ['Courses'],
+        security: [{ bearerAuth: [] }],
+        summary: 'Список студентов конкретного курса',
+        description: 'Требуется разрешение courses:view_students. Доступно преподавателю курса или Администратору.',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: {
+          200: { description: 'Список записанных студентов' },
+          403: { description: 'Доступ запрещен (только автор курса)' },
+        },
+      },
+    },
     '/enrollments': {
       post: {
         tags: ['Enrollments'],
@@ -528,6 +584,18 @@ export const swaggerDocument = {
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
           200: { description: 'Карта удалена' },
+        },
+      },
+    },
+    '/payments': {
+      get: {
+        tags: ['Payments'],
+        security: [{ bearerAuth: [] }],
+        summary: 'Реестр всех платежей платформы (Только Администратор)',
+        description: 'Требуется разрешение payments:view_all. Возвращает все финансовые транзакции с информацией о курсе, пользователе и маске карты.',
+        responses: {
+          200: { description: 'Список всех платежей' },
+          403: { description: 'Доступ запрещен' },
         },
       },
     },

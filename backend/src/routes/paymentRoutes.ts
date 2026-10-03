@@ -5,6 +5,7 @@ import { hasPermission } from '../middleware/roleGuard.js';
 
 const router = Router();
 
+router.get('/', authenticate, hasPermission('payments:view_all'), PaymentController.getAllPayments);
 router.post('/checkout', authenticate, hasPermission('payments:create'), PaymentController.checkout);
 router.get('/my', authenticate, hasPermission('payments:view_my'), PaymentController.getMyPayments);
 

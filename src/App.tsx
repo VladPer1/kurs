@@ -536,13 +536,19 @@ export default function App() {
                       onClick={() => handleLoginPreset('admin@course-platform.local', 'AdminPassword123!')}
                       className="px-2.5 py-1 text-xs rounded bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:bg-purple-600/50"
                     >
-                      Авторизоваться как Admin
+                      Войти как Admin
+                    </button>
+                    <button
+                      onClick={() => handleLoginPreset('alex.devops@course-platform.local', 'Instructor123!')}
+                      className="px-2.5 py-1 text-xs rounded bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-600/50"
+                    >
+                      Войти как Instructor
                     </button>
                     <button
                       onClick={() => handleLoginPreset('student@course-platform.local', 'StudentPassword123!')}
                       className="px-2.5 py-1 text-xs rounded bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/50"
                     >
-                      Авторизоваться как Student
+                      Войти как Student
                     </button>
                   </div>
                 )}
@@ -562,6 +568,33 @@ export default function App() {
                     className="p-2 rounded bg-slate-950 hover:bg-slate-800 text-left border border-slate-800 text-slate-300"
                   >
                     <span className="font-bold text-blue-400 mr-1.5">GET</span> /courses (Каталог)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEndpointMethod('GET');
+                      setEndpointUrl('/api/v1/users');
+                    }}
+                    className="p-2 rounded bg-slate-950 hover:bg-slate-800 text-left border border-slate-800 text-slate-300"
+                  >
+                    <span className="font-bold text-purple-400 mr-1.5">GET</span> /users (Все с курсами - Admin)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEndpointMethod('GET');
+                      setEndpointUrl('/api/v1/instructors/my/students');
+                    }}
+                    className="p-2 rounded bg-slate-950 hover:bg-slate-800 text-left border border-slate-800 text-slate-300"
+                  >
+                    <span className="font-bold text-cyan-400 mr-1.5">GET</span> /instructors/my/students
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEndpointMethod('GET');
+                      setEndpointUrl('/api/v1/payments');
+                    }}
+                    className="p-2 rounded bg-slate-950 hover:bg-slate-800 text-left border border-slate-800 text-slate-300"
+                  >
+                    <span className="font-bold text-emerald-400 mr-1.5">GET</span> /payments (Все оплаты - Admin)
                   </button>
                   <button
                     onClick={() => {

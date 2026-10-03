@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './authRoutes.js';
 import roleRoutes from './roleRoutes.js';
+import userRoutes from './userRoutes.js';
 import instructorRoutes from './instructorRoutes.js';
 import courseRoutes from './courseRoutes.js';
 import enrollmentRoutes from './enrollmentRoutes.js';
@@ -11,6 +12,7 @@ import systemRoutes from './systemRoutes.js';
 const router = Router();
 
 router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
 router.use('/', roleRoutes); // /roles, /permissions, /users/:id/role
 router.use('/instructors', instructorRoutes);
 router.use('/courses', courseRoutes);
