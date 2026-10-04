@@ -32,6 +32,1091 @@ components:
       scheme: "bearer"
       bearerFormat: "JWT"
       description: "Введите JWT Access токен (Bearer <token>)"
+  schemas:
+    RegisterRequest:
+      type: "object"
+      required:
+        - "email"
+        - "password"
+        - "full_name"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          example: "student@example.com"
+        password:
+          type: "string"
+          minLength: 8
+          example: "StudentSecurePass123!"
+        full_name:
+          type: "string"
+          example: "Иван Иванов"
+        role:
+          type: "string"
+          enum:
+            - "student"
+            - "instructor"
+          example: "student"
+      example:
+        email: "student@example.com"
+        password: "StudentSecurePass123!"
+        full_name: "Иван Иванов"
+        role: "student"
+    LoginRequest:
+      type: "object"
+      required:
+        - "email"
+        - "password"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          example: "admin@course-platform.local"
+        password:
+          type: "string"
+          example: "AdminSecurePass123!"
+      example:
+        email: "admin@course-platform.local"
+        password: "AdminSecurePass123!"
+    CreateCourseRequest:
+      type: "object"
+      required:
+        - "title"
+        - "price"
+        - "start_date"
+        - "max_seats"
+      properties:
+        title:
+          type: "string"
+          example: "Архитектура микросервисов на Go и Kubernetes"
+        description:
+          type: "string"
+          example: "Глубокий практический курс по разработке распределенных отказоустойчивых систем на Golang."
+        price:
+          type: "number"
+          example: 45000
+        start_date:
+          type: "string"
+          format: "date-time"
+          example: "2026-11-01T10:00:00.000Z"
+        max_seats:
+          type: "integer"
+          example: 30
+        instructor_id:
+          type: "string"
+          example: "instr-uuid-1"
+        status:
+          type: "string"
+          enum:
+            - "draft"
+            - "published"
+            - "archived"
+          example: "published"
+      example:
+        title: "Архитектура микросервисов на Go и Kubernetes"
+        description: "Глубокий практический курс по разработке распределенных отказоустойчивых систем на Golang."
+        price: 45000
+        start_date: "2026-11-01T10:00:00.000Z"
+        max_seats: 30
+        status: "published"
+    UpdateCourseRequest:
+      type: "object"
+      properties:
+        title:
+          type: "string"
+          example: "Архитектура микросервисов на Go (Обновленный)"
+        description:
+          type: "string"
+          example: "Добавлены модули по gRPC, Kafka и OpenTelemetry."
+        price:
+          type: "number"
+          example: 49000
+        start_date:
+          type: "string"
+          format: "date-time"
+          example: "2026-11-15T10:00:00.000Z"
+        max_seats:
+          type: "integer"
+          example: 35
+        status:
+          type: "string"
+          enum:
+            - "draft"
+            - "published"
+            - "archived"
+          example: "published"
+      example:
+        title: "Архитектура микросервисов на Go (Обновленный)"
+        description: "Добавлены модули по gRPC, Kafka и OpenTelemetry."
+        price: 49000
+        start_date: "2026-11-15T10:00:00.000Z"
+        max_seats: 35
+        status: "published"
+    CreateRoleRequest:
+      type: "object"
+      required:
+        - "name"
+      properties:
+        name:
+          type: "string"
+          example: "moderator"
+        description:
+          type: "string"
+          example: "Модератор обучающих курсов и заявок студентов"
+      example:
+        name: "moderator"
+        description: "Модератор обучающих курсов и заявок студентов"
+    UpdateRoleRequest:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          example: "content_manager"
+        description:
+          type: "string"
+          example: "Управление публикацией учебных программ"
+      example:
+        name: "content_manager"
+        description: "Управление публикацией учебных программ"
+    UpdateRolePermissionsRequest:
+      type: "object"
+      required:
+        - "permission_ids"
+      properties:
+        permission_ids:
+          type: "array"
+          items:
+            type: "string"
+          example:
+            - "perm-courses-create"
+            - "perm-courses-edit"
+            - "perm-courses-view-students"
+      example:
+        permission_ids:
+          - "perm-courses-create"
+          - "perm-courses-edit"
+    AssignRoleRequest:
+      type: "object"
+      required:
+        - "role_id"
+      properties:
+        role_id:
+          type: "string"
+          example: "role-uuid-instructor"
+      example:
+        role_id: "role-uuid-instructor"
+    CreateInstructorRequest:
+      type: "object"
+      required:
+        - "user_id"
+      properties:
+        user_id:
+          type: "string"
+          example: "usr-uuid-example-1"
+        bio:
+          type: "string"
+          example: "Staff Backend Engineer, архитектор распределенных систем."
+        specialization:
+          type: "string"
+          example: "Golang, Highload, PostgreSQL, Docker"
+        rating:
+          type: "number"
+          example: 4.95
+      example:
+        user_id: "usr-uuid-example-1"
+        bio: "Staff Backend Engineer, архитектор распределенных систем."
+        specialization: "Golang, Highload, PostgreSQL, Docker"
+        rating: 4.95
+    UpdateInstructorRequest:
+      type: "object"
+      properties:
+        bio:
+          type: "string"
+          example: "Главный технический руководитель направления Cloud-Native."
+        specialization:
+          type: "string"
+          example: "Golang, Kubernetes, Distributed Systems"
+        rating:
+          type: "number"
+          example: 5
+      example:
+        bio: "Главный технический руководитель направления Cloud-Native."
+        specialization: "Golang, Kubernetes, Distributed Systems"
+        rating: 5
+    CreateEnrollmentRequest:
+      type: "object"
+      required:
+        - "course_id"
+      properties:
+        course_id:
+          type: "string"
+          example: "course-uuid-golang"
+      example:
+        course_id: "course-uuid-golang"
+    AddCardRequest:
+      type: "object"
+      required:
+        - "cleanCardNumber"
+        - "card_holder"
+        - "exp_month"
+        - "exp_year"
+        - "cleanCvv"
+      properties:
+        cleanCardNumber:
+          type: "string"
+          example: "4532758812345678"
+        card_holder:
+          type: "string"
+          example: "IVAN IVANOV"
+        exp_month:
+          type: "string"
+          example: "12"
+        exp_year:
+          type: "string"
+          example: "28"
+        cleanCvv:
+          type: "string"
+          example: "789"
+        is_default:
+          type: "boolean"
+          example: true
+      example:
+        cleanCardNumber: "4532758812345678"
+        card_holder: "IVAN IVANOV"
+        exp_month: "12"
+        exp_year: "28"
+        cleanCvv: "789"
+        is_default: true
+    CheckoutPaymentRequest:
+      type: "object"
+      required:
+        - "enrollment_id"
+      properties:
+        enrollment_id:
+          type: "string"
+          example: "enr-uuid-1234"
+        payment_method_id:
+          type: "string"
+          example: "card-uuid-5678"
+      example:
+        enrollment_id: "enr-uuid-1234"
+        payment_method_id: "card-uuid-5678"
+    AuthResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        message:
+          type: "string"
+          example: "Аутентификация успешна."
+        data:
+          type: "object"
+          properties:
+            accessToken:
+              type: "string"
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            user:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  example: "usr-uuid-1"
+                email:
+                  type: "string"
+                  example: "admin@course-platform.local"
+                full_name:
+                  type: "string"
+                  example: "Администратор Системы"
+                role:
+                  type: "string"
+                  example: "admin"
+                permissions:
+                  type: "array"
+                  items:
+                    type: "string"
+                  example:
+                    - "users:view_all"
+                    - "courses:create"
+                    - "roles:manage"
+      example:
+        success: true
+        message: "Аутентификация успешна."
+        data:
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJhZG1pbiJ9..."
+          user:
+            id: "usr-uuid-1"
+            email: "admin@course-platform.local"
+            full_name: "Администратор Системы"
+            role: "admin"
+            permissions:
+              - "users:view_all"
+              - "users:manage_roles"
+              - "roles:manage"
+              - "courses:create"
+              - "payments:view_all"
+    UserResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "usr-uuid-1"
+            email:
+              type: "string"
+              example: "student@example.com"
+            full_name:
+              type: "string"
+              example: "Иван Иванов"
+            role:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  example: "role-uuid-student"
+                name:
+                  type: "string"
+                  example: "student"
+                description:
+                  type: "string"
+                  example: "Слушатель курсов"
+            courses:
+              type: "array"
+              items:
+                type: "object"
+              example:
+                - id: "course-1"
+                  title: "Основы Golang"
+                  status: "confirmed"
+      example:
+        success: true
+        data:
+          id: "usr-uuid-1"
+          email: "student@example.com"
+          full_name: "Иван Иванов"
+          role:
+            id: "role-uuid-student"
+            name: "student"
+            description: "Слушатель курсов"
+          enrollments:
+            - id: "enr-1"
+              status: "confirmed"
+              course:
+                id: "c-1"
+                title: "Основы Go"
+                price: 30000
+    UserListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+              example: 12
+            users:
+              type: "array"
+              items:
+                $ref: "#/components/schemas/UserResponse"
+      example:
+        success: true
+        data:
+          total: 2
+          users:
+            - id: "usr-1"
+              email: "admin@course-platform.local"
+              full_name: "Администратор Системы"
+              role:
+                name: "admin"
+            - id: "usr-2"
+              email: "student@example.com"
+              full_name: "Иван Иванов"
+              role:
+                name: "student"
+    RoleResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "role-uuid-instructor"
+            name:
+              type: "string"
+              example: "instructor"
+            description:
+              type: "string"
+              example: "Преподаватель курсов"
+            permissions:
+              type: "array"
+              items:
+                type: "object"
+              example:
+                - id: "perm-1"
+                  code: "courses:create"
+                  description: "Создание курсов"
+                - id: "perm-2"
+                  code: "courses:edit"
+                  description: "Редактирование своих курсов"
+      example:
+        success: true
+        data:
+          id: "role-uuid-instructor"
+          name: "instructor"
+          description: "Преподаватель курсов"
+          permissions:
+            - id: "perm-1"
+              code: "courses:create"
+              description: "Создание курсов"
+            - id: "perm-2"
+              code: "courses:edit"
+              description: "Редактирование своих курсов"
+            - id: "perm-3"
+              code: "courses:view_students"
+              description: "Просмотр студентов курса"
+    RoleListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RoleResponse"
+      example:
+        success: true
+        data:
+          - id: "role-1"
+            name: "admin"
+            description: "Полный администратор платформы"
+          - id: "role-2"
+            name: "instructor"
+            description: "Преподаватель курсов"
+          - id: "role-3"
+            name: "student"
+            description: "Студент / Слушатель"
+    PermissionListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+              code:
+                type: "string"
+              category:
+                type: "string"
+              description:
+                type: "string"
+      example:
+        success: true
+        data:
+          - id: "p-1"
+            code: "users:view_all"
+            category: "users"
+            description: "Просмотр всех пользователей"
+          - id: "p-2"
+            code: "courses:create"
+            category: "courses"
+            description: "Создание новых обучающих курсов"
+          - id: "p-3"
+            code: "roles:manage"
+            category: "roles"
+            description: "Управление ролями и правами RBAC"
+    CourseResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "c-uuid-1"
+            title:
+              type: "string"
+              example: "Разработка на Go и TypeScript"
+            description:
+              type: "string"
+              example: "Практический интенсив"
+            price:
+              type: "number"
+              example: 45000
+            start_date:
+              type: "string"
+              example: "2026-11-01T10:00:00.000Z"
+            max_seats:
+              type: "integer"
+              example: 25
+            available_seats:
+              type: "integer"
+              example: 24
+            status:
+              type: "string"
+              example: "published"
+      example:
+        success: true
+        data:
+          id: "c-uuid-1"
+          title: "Разработка на Go и TypeScript"
+          description: "Практический интенсив по созданию масштабируемых систем."
+          price: 45000
+          start_date: "2026-11-01T10:00:00.000Z"
+          max_seats: 25
+          available_seats: 24
+          status: "published"
+          instructor:
+            id: "instr-1"
+            specialization: "Golang, Highload"
+            user:
+              full_name: "Алексей Архитекторов"
+              email: "alexey@instructor.local"
+    CourseListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/CourseResponse"
+        pagination:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+              example: 10
+            page:
+              type: "integer"
+              example: 1
+            limit:
+              type: "integer"
+              example: 10
+            totalPages:
+              type: "integer"
+              example: 1
+      example:
+        success: true
+        data:
+          - id: "c-1"
+            title: "Golang Microservices & Docker"
+            price: 45000
+            start_date: "2026-11-01T10:00:00.000Z"
+            available_seats: 18
+            max_seats: 25
+            status: "published"
+        pagination:
+          total: 1
+          page: 1
+          limit: 10
+          totalPages: 1
+    CourseStudentsResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            courseId:
+              type: "string"
+              example: "c-1"
+            courseTitle:
+              type: "string"
+              example: "Разработка на Go"
+            totalStudents:
+              type: "integer"
+              example: 5
+            students:
+              type: "array"
+              items:
+                type: "object"
+                properties:
+                  studentId:
+                    type: "string"
+                  fullName:
+                    type: "string"
+                  email:
+                    type: "string"
+                  status:
+                    type: "string"
+      example:
+        success: true
+        data:
+          courseId: "c-1"
+          courseTitle: "Разработка на Go"
+          totalStudents: 1
+          students:
+            - enrollmentId: "enr-1"
+              studentId: "usr-student-1"
+              fullName: "Иван Иванов"
+              email: "student@example.com"
+              status: "confirmed"
+              enrolledAt: "2026-10-04T02:00:00.000Z"
+    InstructorResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "instr-1"
+            bio:
+              type: "string"
+              example: "Senior Go Developer"
+            specialization:
+              type: "string"
+              example: "Golang, Highload"
+            rating:
+              type: "number"
+              example: 4.95
+            user:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  example: "usr-1"
+                full_name:
+                  type: "string"
+                  example: "Алексей Архитекторов"
+                email:
+                  type: "string"
+                  example: "alex@mentor.ru"
+      example:
+        success: true
+        data:
+          id: "instr-1"
+          bio: "Senior Go Developer, 10 лет опыта в распределенных системах."
+          specialization: "Golang, Distributed Systems, Docker"
+          rating: 4.95
+          user:
+            id: "usr-1"
+            full_name: "Алексей Архитекторов"
+            email: "alex@mentor.ru"
+    InstructorListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/InstructorResponse"
+      example:
+        success: true
+        data:
+          - id: "instr-1"
+            specialization: "Golang, Highload"
+            rating: 4.95
+            user:
+              full_name: "Алексей Архитекторов"
+              email: "alex@mentor.ru"
+    InstructorStudentsResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            instructor:
+              type: "object"
+            totalStudents:
+              type: "integer"
+              example: 8
+            enrollments:
+              type: "array"
+              items:
+                type: "object"
+      example:
+        success: true
+        data:
+          totalStudents: 2
+          enrollments:
+            - enrollmentId: "enr-1"
+              studentName: "Иван Иванов"
+              studentEmail: "student@example.com"
+              courseTitle: "Golang Architecture"
+              status: "confirmed"
+    EnrollmentResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        message:
+          type: "string"
+          example: "Место успешно забронировано!"
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "enr-1234"
+            status:
+              type: "string"
+              example: "pending_payment"
+            enrolled_at:
+              type: "string"
+              example: "2026-10-04T04:00:00.000Z"
+            course:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  example: "course-1"
+                title:
+                  type: "string"
+                  example: "Golang Microservices"
+                price:
+                  type: "number"
+                  example: 45000
+                available_seats:
+                  type: "integer"
+                  example: 19
+      example:
+        success: true
+        message: "Место успешно забронировано (статус: pending_payment). Перейдите к оплате."
+        data:
+          id: "enr-1234"
+          status: "pending_payment"
+          enrolled_at: "2026-10-04T04:00:00.000Z"
+          course:
+            id: "course-1"
+            title: "Golang Microservices"
+            price: 45000
+            available_seats: 19
+    EnrollmentListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/EnrollmentResponse"
+      example:
+        success: true
+        data:
+          - id: "enr-1234"
+            status: "confirmed"
+            course:
+              id: "c-1"
+              title: "Golang Intensive"
+              price: 45000
+            payments:
+              - id: "pay-1"
+                status: "succeeded"
+                amount: 45000
+    CardResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        message:
+          type: "string"
+          example: "Банковская карта успешно привязана (AES-256-GCM)."
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "card-1"
+            card_holder:
+              type: "string"
+              example: "IVAN IVANOV"
+            last4:
+              type: "string"
+              example: "5678"
+            exp_month:
+              type: "string"
+              example: "12"
+            exp_year:
+              type: "string"
+              example: "28"
+            is_default:
+              type: "boolean"
+              example: true
+            created_at:
+              type: "string"
+              example: "2026-10-04T04:00:00.000Z"
+      example:
+        success: true
+        message: "Банковская карта успешно привязана (данные зашифрованы алгоритмом AES-256-GCM)."
+        data:
+          id: "card-1"
+          card_holder: "IVAN IVANOV"
+          last4: "5678"
+          exp_month: "12"
+          exp_year: "28"
+          is_default: true
+          created_at: "2026-10-04T04:00:00.000Z"
+    CardListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+              card_holder:
+                type: "string"
+              last4:
+                type: "string"
+              exp_month:
+                type: "string"
+              exp_year:
+                type: "string"
+              is_default:
+                type: "boolean"
+      example:
+        success: true
+        data:
+          - id: "card-1"
+            card_holder: "IVAN IVANOV"
+            last4: "5678"
+            exp_month: "12"
+            exp_year: "28"
+            is_default: true
+    PaymentSuccessResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        message:
+          type: "string"
+          example: "Оплата успешно завершена!"
+        data:
+          type: "object"
+          properties:
+            paymentId:
+              type: "string"
+              example: "pay-1234"
+            transactionRef:
+              type: "string"
+              example: "tx_a8f9c1b2e3d4"
+            amount:
+              type: "number"
+              example: 45000
+            status:
+              type: "string"
+              example: "succeeded"
+            paidAt:
+              type: "string"
+              example: "2026-10-04T04:10:00.000Z"
+            course:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  example: "course-1"
+                title:
+                  type: "string"
+                  example: "Golang Microservices"
+      example:
+        success: true
+        message: "Оплата успешно завершена! Доступ к курсу активирован."
+        data:
+          paymentId: "pay-1234"
+          transactionRef: "tx_a8f9c1b2e3d4"
+          amount: 45000
+          status: "succeeded"
+          paidAt: "2026-10-04T04:10:00.000Z"
+          course:
+            id: "course-1"
+            title: "Golang Microservices"
+            startDate: "2026-11-01T10:00:00.000Z"
+    MyPaymentsResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "array"
+          items:
+            type: "object"
+      example:
+        success: true
+        data:
+          - id: "pay-1"
+            amount: 45000
+            status: "succeeded"
+            transaction_ref: "tx_a8f9c1b2e3d4"
+            paid_at: "2026-10-04T04:10:00.000Z"
+            enrollment:
+              course:
+                id: "c-1"
+                title: "Golang Microservices"
+                price: 45000
+    PaymentListResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+              example: 1
+            payments:
+              type: "array"
+              items:
+                type: "object"
+      example:
+        success: true
+        data:
+          total: 1
+          payments:
+            - id: "pay-1"
+              amount: 45000
+              status: "succeeded"
+              transaction_ref: "tx_a8f9c1b2e3d4"
+              paid_at: "2026-10-04T04:10:00.000Z"
+              user:
+                id: "usr-1"
+                full_name: "Иван Иванов"
+                email: "student@example.com"
+              enrollment:
+                course:
+                  title: "Golang Microservices"
+                  price: 45000
+    HealthResponse:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          example: "UP"
+        timestamp:
+          type: "string"
+          example: "2026-10-04T04:20:00.000Z"
+        database:
+          type: "string"
+          example: "connected"
+        uptimeSeconds:
+          type: "integer"
+          example: 3600
+      example:
+        status: "UP"
+        timestamp: "2026-10-04T04:20:00.000Z"
+        database: "connected"
+        uptimeSeconds: 3600
+    MetricsResponse:
+      type: "object"
+      properties:
+        uptimeSeconds:
+          type: "integer"
+          example: 3600
+        totalRequestsServed:
+          type: "integer"
+          example: 254
+        memoryUsage:
+          type: "object"
+          properties:
+            rssMB:
+              type: "string"
+              example: "85.40"
+            heapTotalMB:
+              type: "string"
+              example: "42.10"
+            heapUsedMB:
+              type: "string"
+              example: "31.25"
+        nodeVersion:
+          type: "string"
+          example: "v20.12.0"
+        platform:
+          type: "string"
+          example: "linux"
+        recentAuditLogs:
+          type: "array"
+          items:
+            type: "object"
+      example:
+        uptimeSeconds: 3600
+        totalRequestsServed: 254
+        memoryUsage:
+          rssMB: "85.40"
+          heapTotalMB: "42.10"
+          heapUsedMB: "31.25"
+        nodeVersion: "v20.12.0"
+        platform: "linux"
+        recentAuditLogs: []
+    SuccessResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        message:
+          type: "string"
+          example: "Операция успешно выполнена."
+      example:
+        success: true
+        message: "Операция успешно выполнена."
+    ErrorResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: false
+        error:
+          type: "object"
+          properties:
+            code:
+              type: "string"
+              example: "VALIDATION_ERROR"
+            message:
+              type: "string"
+              example: "Неверные параметры запроса."
+            details:
+              type: "array"
+              items:
+                type: "object"
+      example:
+        success: false
+        error:
+          code: "VALIDATION_ERROR"
+          message: "Неверные параметры запроса."
 paths:
   /auth/register:
     post:
@@ -46,26 +1131,57 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/AuthResponse"
+              example:
+                success: true
+                message: "Аутентификация успешна."
+                data:
+                  accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJhZG1pbiJ9..."
+                  user:
+                    id: "usr-uuid-1"
+                    email: "admin@course-platform.local"
+                    full_name: "Администратор Системы"
+                    role: "admin"
+                    permissions:
+                      - "users:view_all"
+                      - "users:manage_roles"
+                      - "roles:manage"
+                      - "courses:create"
+                      - "payments:view_all"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         409:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Данные регистрации"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: "student@example.com"
+              password: "StudentSecurePass123!"
+              full_name: "Иван Иванов"
+              role: "student"
   /auth/login:
     post:
       tags:
@@ -79,26 +1195,55 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/AuthResponse"
+              example:
+                success: true
+                message: "Аутентификация успешна."
+                data:
+                  accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJhZG1pbiJ9..."
+                  user:
+                    id: "usr-uuid-1"
+                    email: "admin@course-platform.local"
+                    full_name: "Администратор Системы"
+                    role: "admin"
+                    permissions:
+                      - "users:view_all"
+                      - "users:manage_roles"
+                      - "roles:manage"
+                      - "courses:create"
+                      - "payments:view_all"
         401:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         423:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Учетные данные"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: "admin@course-platform.local"
+              password: "AdminSecurePass123!"
   /auth/refresh:
     post:
       tags:
@@ -118,7 +1263,12 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
   /auth/logout:
     post:
       tags:
@@ -132,7 +1282,10 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+                message: "Операция успешно выполнена."
       security:
         - bearerAuth: []
   /auth/me:
@@ -154,7 +1307,12 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /cards:
@@ -170,7 +1328,16 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CardListResponse"
+              example:
+                success: true
+                data:
+                  - id: "card-1"
+                    card_holder: "IVAN IVANOV"
+                    last4: "5678"
+                    exp_month: "12"
+                    exp_year: "28"
+                    is_default: true
       security:
         - bearerAuth: []
     post:
@@ -185,20 +1352,43 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CardResponse"
+              example:
+                success: true
+                message: "Банковская карта успешно привязана (данные зашифрованы алгоритмом AES-256-GCM)."
+                data:
+                  id: "card-1"
+                  card_holder: "IVAN IVANOV"
+                  last4: "5678"
+                  exp_month: "12"
+                  exp_year: "28"
+                  is_default: true
+                  created_at: "2026-10-04T04:00:00.000Z"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Реквизиты карты"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/AddCardRequest"
+            example:
+              cleanCardNumber: "4532758812345678"
+              card_holder: "IVAN IVANOV"
+              exp_month: "12"
+              exp_year: "28"
+              cleanCvv: "789"
+              is_default: true
       security:
         - bearerAuth: []
   /cards/{id}:
@@ -214,19 +1404,29 @@ paths:
           description: "Card ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.SuccessResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+                message: "Операция успешно выполнена."
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /courses:
@@ -242,43 +1442,70 @@ paths:
           description: "Номер страницы"
           schema:
             type: "integer"
+            example: 1
+          example: 1
         - name: "limit"
           in: "query"
           required: false
           description: "Количество на страницу"
           schema:
             type: "integer"
+            example: 10
+          example: 10
         - name: "search"
           in: "query"
           required: false
           description: "Поиск по названию или описанию"
           schema:
             type: "string"
+            example: "Go"
+          example: "Go"
         - name: "min_price"
           in: "query"
           required: false
           description: "Минимальная цена"
           schema:
             type: "number"
+            example: 10000
+          example: 10000
         - name: "max_price"
           in: "query"
           required: false
           description: "Максимальная цена"
           schema:
             type: "number"
+            example: 80000
+          example: 80000
         - name: "instructor_id"
           in: "query"
           required: false
           description: "ID преподавателя"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.CourseListResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CourseListResponse"
+              example:
+                success: true
+                data:
+                  - id: "c-1"
+                    title: "Golang Microservices & Docker"
+                    price: 45000
+                    start_date: "2026-11-01T10:00:00.000Z"
+                    available_seats: 18
+                    max_seats: 25
+                    status: "published"
+                pagination:
+                  total: 1
+                  page: 1
+                  limit: 10
+                  totalPages: 1
     post:
       tags:
         - "courses"
@@ -291,26 +1518,60 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CourseResponse"
+              example:
+                success: true
+                data:
+                  id: "c-uuid-1"
+                  title: "Разработка на Go и TypeScript"
+                  description: "Практический интенсив по созданию масштабируемых систем."
+                  price: 45000
+                  start_date: "2026-11-01T10:00:00.000Z"
+                  max_seats: 25
+                  available_seats: 24
+                  status: "published"
+                  instructor:
+                    id: "instr-1"
+                    specialization: "Golang, Highload"
+                    user:
+                      full_name: "Алексей Архитекторов"
+                      email: "alexey@instructor.local"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Данные курса"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/CreateCourseRequest"
+            example:
+              title: "Архитектура микросервисов на Go и Kubernetes"
+              description: "Глубокий практический курс по разработке распределенных отказоустойчивых систем на Golang."
+              price: 45000
+              start_date: "2026-11-01T10:00:00.000Z"
+              max_seats: 30
+              status: "published"
       security:
         - bearerAuth: []
   /courses/{id}:
@@ -326,19 +1587,43 @@ paths:
           description: "Course ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.CourseResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CourseResponse"
+              example:
+                success: true
+                data:
+                  id: "c-uuid-1"
+                  title: "Разработка на Go и TypeScript"
+                  description: "Практический интенсив по созданию масштабируемых систем."
+                  price: 45000
+                  start_date: "2026-11-01T10:00:00.000Z"
+                  max_seats: 25
+                  available_seats: 24
+                  status: "published"
+                  instructor:
+                    id: "instr-1"
+                    specialization: "Golang, Highload"
+                    user:
+                      full_name: "Алексей Архитекторов"
+                      email: "alexey@instructor.local"
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
     put:
       tags:
         - "courses"
@@ -351,32 +1636,68 @@ paths:
           description: "Course ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.CourseResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CourseResponse"
+              example:
+                success: true
+                data:
+                  id: "c-uuid-1"
+                  title: "Разработка на Go и TypeScript"
+                  description: "Практический интенсив по созданию масштабируемых систем."
+                  price: 45000
+                  start_date: "2026-11-01T10:00:00.000Z"
+                  max_seats: 25
+                  available_seats: 24
+                  status: "published"
+                  instructor:
+                    id: "instr-1"
+                    specialization: "Golang, Highload"
+                    user:
+                      full_name: "Алексей Архитекторов"
+                      email: "alexey@instructor.local"
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Обновляемые поля"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/UpdateCourseRequest"
+            example:
+              title: "Архитектура микросервисов на Go (Обновленный)"
+              description: "Добавлены модули по gRPC, Kafka и OpenTelemetry."
+              price: 49000
+              start_date: "2026-11-15T10:00:00.000Z"
+              max_seats: 35
+              status: "published"
       security:
         - bearerAuth: []
     delete:
@@ -391,25 +1712,40 @@ paths:
           description: "Course ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.SuccessResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+                message: "Операция успешно выполнена."
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /courses/{id}/students:
@@ -425,25 +1761,50 @@ paths:
           description: "Course ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.CourseStudentsResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CourseStudentsResponse"
+              example:
+                success: true
+                data:
+                  courseId: "c-1"
+                  courseTitle: "Разработка на Go"
+                  totalStudents: 1
+                  students:
+                    - enrollmentId: "enr-1"
+                      studentId: "usr-student-1"
+                      fullName: "Иван Иванов"
+                      email: "student@example.com"
+                      status: "confirmed"
+                      enrolledAt: "2026-10-04T02:00:00.000Z"
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /enrollments:
@@ -459,20 +1820,39 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/EnrollmentResponse"
+              example:
+                success: true
+                message: "Место успешно забронировано (статус: pending_payment). Перейдите к оплате."
+                data:
+                  id: "enr-1234"
+                  status: "pending_payment"
+                  enrolled_at: "2026-10-04T04:00:00.000Z"
+                  course:
+                    id: "course-1"
+                    title: "Golang Microservices"
+                    price: 45000
+                    available_seats: 19
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "ID курса"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/CreateEnrollmentRequest"
+            example:
+              course_id: "course-uuid-golang"
       security:
         - bearerAuth: []
   /enrollments/my:
@@ -488,7 +1868,20 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/EnrollmentListResponse"
+              example:
+                success: true
+                data:
+                  - id: "enr-1234"
+                    status: "confirmed"
+                    course:
+                      id: "c-1"
+                      title: "Golang Intensive"
+                      price: 45000
+                    payments:
+                      - id: "pay-1"
+                        status: "succeeded"
+                        amount: 45000
       security:
         - bearerAuth: []
   /enrollments/instructor:
@@ -504,7 +1897,20 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/EnrollmentListResponse"
+              example:
+                success: true
+                data:
+                  - id: "enr-1234"
+                    status: "confirmed"
+                    course:
+                      id: "c-1"
+                      title: "Golang Intensive"
+                      price: 45000
+                    payments:
+                      - id: "pay-1"
+                        status: "succeeded"
+                        amount: 45000
       security:
         - bearerAuth: []
   /enrollments/{id}:
@@ -520,19 +1926,29 @@ paths:
           description: "Enrollment ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.SuccessResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+                message: "Операция успешно выполнена."
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /instructors:
@@ -548,7 +1964,16 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/InstructorListResponse"
+              example:
+                success: true
+                data:
+                  - id: "instr-1"
+                    specialization: "Golang, Highload"
+                    rating: 4.95
+                    user:
+                      full_name: "Алексей Архитекторов"
+                      email: "alex@mentor.ru"
     post:
       tags:
         - "instructors"
@@ -561,26 +1986,52 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/InstructorResponse"
+              example:
+                success: true
+                data:
+                  id: "instr-1"
+                  bio: "Senior Go Developer, 10 лет опыта в распределенных системах."
+                  specialization: "Golang, Distributed Systems, Docker"
+                  rating: 4.95
+                  user:
+                    id: "usr-1"
+                    full_name: "Алексей Архитекторов"
+                    email: "alex@mentor.ru"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         409:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Данные профиля"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/CreateInstructorRequest"
+            example:
+              user_id: "usr-uuid-example-1"
+              bio: "Staff Backend Engineer, архитектор распределенных систем."
+              specialization: "Golang, Highload, PostgreSQL, Docker"
+              rating: 4.95
       security:
         - bearerAuth: []
   /instructors/{id}:
@@ -596,19 +2047,37 @@ paths:
           description: "Instructor ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.InstructorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/InstructorResponse"
+              example:
+                success: true
+                data:
+                  id: "instr-1"
+                  bio: "Senior Go Developer, 10 лет опыта в распределенных системах."
+                  specialization: "Golang, Distributed Systems, Docker"
+                  rating: 4.95
+                  user:
+                    id: "usr-1"
+                    full_name: "Алексей Архитекторов"
+                    email: "alex@mentor.ru"
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
     put:
       tags:
         - "instructors"
@@ -621,32 +2090,59 @@ paths:
           description: "Instructor ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.InstructorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/InstructorResponse"
+              example:
+                success: true
+                data:
+                  id: "instr-1"
+                  bio: "Senior Go Developer, 10 лет опыта в распределенных системах."
+                  specialization: "Golang, Distributed Systems, Docker"
+                  rating: 4.95
+                  user:
+                    id: "usr-1"
+                    full_name: "Алексей Архитекторов"
+                    email: "alex@mentor.ru"
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Данные профиля"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/UpdateInstructorRequest"
+            example:
+              bio: "Главный технический руководитель направления Cloud-Native."
+              specialization: "Golang, Kubernetes, Distributed Systems"
+              rating: 5
       security:
         - bearerAuth: []
   /instructors/my/students:
@@ -662,13 +2158,28 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/InstructorStudentsResponse"
+              example:
+                success: true
+                data:
+                  totalStudents: 2
+                  enrollments:
+                    - enrollmentId: "enr-1"
+                      studentName: "Иван Иванов"
+                      studentEmail: "student@example.com"
+                      courseTitle: "Golang Architecture"
+                      status: "confirmed"
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /payments/checkout:
@@ -684,20 +2195,41 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/PaymentSuccessResponse"
+              example:
+                success: true
+                message: "Оплата успешно завершена! Доступ к курсу активирован."
+                data:
+                  paymentId: "pay-1234"
+                  transactionRef: "tx_a8f9c1b2e3d4"
+                  amount: 45000
+                  status: "succeeded"
+                  paidAt: "2026-10-04T04:10:00.000Z"
+                  course:
+                    id: "course-1"
+                    title: "Golang Microservices"
+                    startDate: "2026-11-01T10:00:00.000Z"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "ID записи и карты"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/CheckoutPaymentRequest"
+            example:
+              enrollment_id: "enr-uuid-1234"
+              payment_method_id: "card-uuid-5678"
       security:
         - bearerAuth: []
   /payments/my:
@@ -713,7 +2245,20 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/MyPaymentsResponse"
+              example:
+                success: true
+                data:
+                  - id: "pay-1"
+                    amount: 45000
+                    status: "succeeded"
+                    transaction_ref: "tx_a8f9c1b2e3d4"
+                    paid_at: "2026-10-04T04:10:00.000Z"
+                    enrollment:
+                      course:
+                        id: "c-1"
+                        title: "Golang Microservices"
+                        price: 45000
       security:
         - bearerAuth: []
   /payments:
@@ -729,13 +2274,36 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/PaymentListResponse"
+              example:
+                success: true
+                data:
+                  total: 1
+                  payments:
+                    - id: "pay-1"
+                      amount: 45000
+                      status: "succeeded"
+                      transaction_ref: "tx_a8f9c1b2e3d4"
+                      paid_at: "2026-10-04T04:10:00.000Z"
+                      user:
+                        id: "usr-1"
+                        full_name: "Иван Иванов"
+                        email: "student@example.com"
+                      enrollment:
+                        course:
+                          title: "Golang Microservices"
+                          price: 45000
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /roles:
@@ -751,13 +2319,30 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/RoleListResponse"
+              example:
+                success: true
+                data:
+                  - id: "role-1"
+                    name: "admin"
+                    description: "Полный администратор платформы"
+                  - id: "role-2"
+                    name: "instructor"
+                    description: "Преподаватель курсов"
+                  - id: "role-3"
+                    name: "student"
+                    description: "Студент / Слушатель"
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
     post:
@@ -772,26 +2357,55 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/RoleResponse"
+              example:
+                success: true
+                data:
+                  id: "role-uuid-instructor"
+                  name: "instructor"
+                  description: "Преподаватель курсов"
+                  permissions:
+                    - id: "perm-1"
+                      code: "courses:create"
+                      description: "Создание курсов"
+                    - id: "perm-2"
+                      code: "courses:edit"
+                      description: "Редактирование своих курсов"
+                    - id: "perm-3"
+                      code: "courses:view_students"
+                      description: "Просмотр студентов курса"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         409:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Данные роли"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/CreateRoleRequest"
+            example:
+              name: "moderator"
+              description: "Модератор обучающих курсов и заявок студентов"
       security:
         - bearerAuth: []
   /roles/{id}:
@@ -807,32 +2421,63 @@ paths:
           description: "Role ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.RoleResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/RoleResponse"
+              example:
+                success: true
+                data:
+                  id: "role-uuid-instructor"
+                  name: "instructor"
+                  description: "Преподаватель курсов"
+                  permissions:
+                    - id: "perm-1"
+                      code: "courses:create"
+                      description: "Создание курсов"
+                    - id: "perm-2"
+                      code: "courses:edit"
+                      description: "Редактирование своих курсов"
+                    - id: "perm-3"
+                      code: "courses:view_students"
+                      description: "Просмотр студентов курса"
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Новые данные роли"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/UpdateRoleRequest"
+            example:
+              name: "content_manager"
+              description: "Управление публикацией учебных программ"
       security:
         - bearerAuth: []
     delete:
@@ -847,25 +2492,40 @@ paths:
           description: "Role ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.SuccessResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+                message: "Операция успешно выполнена."
         400:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         404:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /permissions:
@@ -897,13 +2557,31 @@ paths:
           description: "Role ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.RoleResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/RoleResponse"
+              example:
+                success: true
+                data:
+                  id: "role-uuid-instructor"
+                  name: "instructor"
+                  description: "Преподаватель курсов"
+                  permissions:
+                    - id: "perm-1"
+                      code: "courses:create"
+                      description: "Создание курсов"
+                    - id: "perm-2"
+                      code: "courses:edit"
+                      description: "Редактирование своих курсов"
+                    - id: "perm-3"
+                      code: "courses:view_students"
+                      description: "Просмотр студентов курса"
       requestBody:
         required: true
         description: "Список прав"
@@ -926,6 +2604,8 @@ paths:
           description: "User ID"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "models.AssignRoleResponse"
@@ -938,14 +2618,21 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       requestBody:
         required: true
         description: "Роль"
         content:
           application/json:
             schema:
-              type: "object"
+              $ref: "#/components/schemas/AssignRoleRequest"
+            example:
+              role_id: "role-uuid-instructor"
       security:
         - bearerAuth: []
   /system/health:
@@ -961,13 +2648,23 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: "UP"
+                timestamp: "2026-10-04T04:20:00.000Z"
+                database: "connected"
+                uptimeSeconds: 3600
         503:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
   /system/metrics:
     get:
       tags:
@@ -981,13 +2678,28 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/MetricsResponse"
+              example:
+                uptimeSeconds: 3600
+                totalRequestsServed: 254
+                memoryUsage:
+                  rssMB: "85.40"
+                  heapTotalMB: "42.10"
+                  heapUsedMB: "31.25"
+                nodeVersion: "v20.12.0"
+                platform: "linux"
+                recentAuditLogs: []
         403:
           description: "models.ErrorResponse"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /users:
@@ -1003,31 +2715,60 @@ paths:
           description: "Поиск по имени или email"
           schema:
             type: "string"
+            example: "Go"
+          example: "Go"
         - name: "role"
           in: "query"
           required: false
           description: "Фильтр по роли (admin, instructor, student)"
           schema:
             type: "string"
+            example: "student"
+          example: "student"
       responses:
         200:
           description: "Список пользователей"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/UserListResponse"
+              example:
+                success: true
+                data:
+                  total: 2
+                  users:
+                    - id: "usr-1"
+                      email: "admin@course-platform.local"
+                      full_name: "Администратор Системы"
+                      role:
+                        name: "admin"
+                    - id: "usr-2"
+                      email: "student@example.com"
+                      full_name: "Иван Иванов"
+                      role:
+                        name: "student"
         401:
           description: "Не авторизован"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         403:
           description: "Доступ запрещен (требуется users:view_all)"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []
   /users/{id}:
@@ -1043,30 +2784,64 @@ paths:
           description: "User ID (UUID)"
           schema:
             type: "string"
+            example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
+          example: "c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c"
       responses:
         200:
           description: "Детальная информация о пользователе"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/UserResponse"
+              example:
+                success: true
+                data:
+                  id: "usr-uuid-1"
+                  email: "student@example.com"
+                  full_name: "Иван Иванов"
+                  role:
+                    id: "role-uuid-student"
+                    name: "student"
+                    description: "Слушатель курсов"
+                  enrollments:
+                    - id: "enr-1"
+                      status: "confirmed"
+                      course:
+                        id: "c-1"
+                        title: "Основы Go"
+                        price: 30000
         401:
           description: "Не авторизован"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         403:
           description: "Доступ запрещен"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
         404:
           description: "Пользователь не найден"
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                error:
+                  code: "VALIDATION_ERROR"
+                  message: "Неверные параметры запроса."
       security:
         - bearerAuth: []

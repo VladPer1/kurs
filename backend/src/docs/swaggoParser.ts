@@ -11,6 +11,929 @@ export interface SwaggoDocConfig {
   controllersDir: string;
 }
 
+// Complete OpenAPI 3.0 Schemas with full property definitions and realistic examples for all models
+export const SWAGGER_SCHEMAS: Record<string, any> = {
+  RegisterRequest: {
+    type: 'object',
+    required: ['email', 'password', 'full_name'],
+    properties: {
+      email: { type: 'string', format: 'email', example: 'student@example.com' },
+      password: { type: 'string', minLength: 8, example: 'StudentSecurePass123!' },
+      full_name: { type: 'string', example: 'Иван Иванов' },
+      role: { type: 'string', enum: ['student', 'instructor'], example: 'student' },
+    },
+    example: {
+      email: 'student@example.com',
+      password: 'StudentSecurePass123!',
+      full_name: 'Иван Иванов',
+      role: 'student',
+    },
+  },
+
+  LoginRequest: {
+    type: 'object',
+    required: ['email', 'password'],
+    properties: {
+      email: { type: 'string', format: 'email', example: 'admin@course-platform.local' },
+      password: { type: 'string', example: 'AdminSecurePass123!' },
+    },
+    example: {
+      email: 'admin@course-platform.local',
+      password: 'AdminSecurePass123!',
+    },
+  },
+
+  CreateCourseRequest: {
+    type: 'object',
+    required: ['title', 'price', 'start_date', 'max_seats'],
+    properties: {
+      title: { type: 'string', example: 'Архитектура микросервисов на Go и Kubernetes' },
+      description: {
+        type: 'string',
+        example: 'Глубокий практический курс по разработке распределенных отказоустойчивых систем на Golang.',
+      },
+      price: { type: 'number', example: 45000 },
+      start_date: { type: 'string', format: 'date-time', example: '2026-11-01T10:00:00.000Z' },
+      max_seats: { type: 'integer', example: 30 },
+      instructor_id: { type: 'string', example: 'instr-uuid-1' },
+      status: { type: 'string', enum: ['draft', 'published', 'archived'], example: 'published' },
+    },
+    example: {
+      title: 'Архитектура микросервисов на Go и Kubernetes',
+      description: 'Глубокий практический курс по разработке распределенных отказоустойчивых систем на Golang.',
+      price: 45000,
+      start_date: '2026-11-01T10:00:00.000Z',
+      max_seats: 30,
+      status: 'published',
+    },
+  },
+
+  UpdateCourseRequest: {
+    type: 'object',
+    properties: {
+      title: { type: 'string', example: 'Архитектура микросервисов на Go (Обновленный)' },
+      description: { type: 'string', example: 'Добавлены модули по gRPC, Kafka и OpenTelemetry.' },
+      price: { type: 'number', example: 49000 },
+      start_date: { type: 'string', format: 'date-time', example: '2026-11-15T10:00:00.000Z' },
+      max_seats: { type: 'integer', example: 35 },
+      status: { type: 'string', enum: ['draft', 'published', 'archived'], example: 'published' },
+    },
+    example: {
+      title: 'Архитектура микросервисов на Go (Обновленный)',
+      description: 'Добавлены модули по gRPC, Kafka и OpenTelemetry.',
+      price: 49000,
+      start_date: '2026-11-15T10:00:00.000Z',
+      max_seats: 35,
+      status: 'published',
+    },
+  },
+
+  CreateRoleRequest: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: { type: 'string', example: 'moderator' },
+      description: { type: 'string', example: 'Модератор обучающих курсов и заявок студентов' },
+    },
+    example: {
+      name: 'moderator',
+      description: 'Модератор обучающих курсов и заявок студентов',
+    },
+  },
+
+  UpdateRoleRequest: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', example: 'content_manager' },
+      description: { type: 'string', example: 'Управление публикацией учебных программ' },
+    },
+    example: {
+      name: 'content_manager',
+      description: 'Управление публикацией учебных программ',
+    },
+  },
+
+  UpdateRolePermissionsRequest: {
+    type: 'object',
+    required: ['permission_ids'],
+    properties: {
+      permission_ids: {
+        type: 'array',
+        items: { type: 'string' },
+        example: ['perm-courses-create', 'perm-courses-edit', 'perm-courses-view-students'],
+      },
+    },
+    example: {
+      permission_ids: ['perm-courses-create', 'perm-courses-edit'],
+    },
+  },
+
+  AssignRoleRequest: {
+    type: 'object',
+    required: ['role_id'],
+    properties: {
+      role_id: { type: 'string', example: 'role-uuid-instructor' },
+    },
+    example: {
+      role_id: 'role-uuid-instructor',
+    },
+  },
+
+  CreateInstructorRequest: {
+    type: 'object',
+    required: ['user_id'],
+    properties: {
+      user_id: { type: 'string', example: 'usr-uuid-example-1' },
+      bio: { type: 'string', example: 'Staff Backend Engineer, архитектор распределенных систем.' },
+      specialization: { type: 'string', example: 'Golang, Highload, PostgreSQL, Docker' },
+      rating: { type: 'number', example: 4.95 },
+    },
+    example: {
+      user_id: 'usr-uuid-example-1',
+      bio: 'Staff Backend Engineer, архитектор распределенных систем.',
+      specialization: 'Golang, Highload, PostgreSQL, Docker',
+      rating: 4.95,
+    },
+  },
+
+  UpdateInstructorRequest: {
+    type: 'object',
+    properties: {
+      bio: { type: 'string', example: 'Главный технический руководитель направления Cloud-Native.' },
+      specialization: { type: 'string', example: 'Golang, Kubernetes, Distributed Systems' },
+      rating: { type: 'number', example: 5.0 },
+    },
+    example: {
+      bio: 'Главный технический руководитель направления Cloud-Native.',
+      specialization: 'Golang, Kubernetes, Distributed Systems',
+      rating: 5.0,
+    },
+  },
+
+  CreateEnrollmentRequest: {
+    type: 'object',
+    required: ['course_id'],
+    properties: {
+      course_id: { type: 'string', example: 'course-uuid-golang' },
+    },
+    example: {
+      course_id: 'course-uuid-golang',
+    },
+  },
+
+  AddCardRequest: {
+    type: 'object',
+    required: ['cleanCardNumber', 'card_holder', 'exp_month', 'exp_year', 'cleanCvv'],
+    properties: {
+      cleanCardNumber: { type: 'string', example: '4532758812345678' },
+      card_holder: { type: 'string', example: 'IVAN IVANOV' },
+      exp_month: { type: 'string', example: '12' },
+      exp_year: { type: 'string', example: '28' },
+      cleanCvv: { type: 'string', example: '789' },
+      is_default: { type: 'boolean', example: true },
+    },
+    example: {
+      cleanCardNumber: '4532758812345678',
+      card_holder: 'IVAN IVANOV',
+      exp_month: '12',
+      exp_year: '28',
+      cleanCvv: '789',
+      is_default: true,
+    },
+  },
+
+  CheckoutPaymentRequest: {
+    type: 'object',
+    required: ['enrollment_id'],
+    properties: {
+      enrollment_id: { type: 'string', example: 'enr-uuid-1234' },
+      payment_method_id: { type: 'string', example: 'card-uuid-5678' },
+    },
+    example: {
+      enrollment_id: 'enr-uuid-1234',
+      payment_method_id: 'card-uuid-5678',
+    },
+  },
+
+  // Response Models
+  AuthResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Аутентификация успешна.' },
+      data: {
+        type: 'object',
+        properties: {
+          accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+          user: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'usr-uuid-1' },
+              email: { type: 'string', example: 'admin@course-platform.local' },
+              full_name: { type: 'string', example: 'Администратор Системы' },
+              role: { type: 'string', example: 'admin' },
+              permissions: {
+                type: 'array',
+                items: { type: 'string' },
+                example: ['users:view_all', 'courses:create', 'roles:manage'],
+              },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      message: 'Аутентификация успешна.',
+      data: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJhZG1pbiJ9...',
+        user: {
+          id: 'usr-uuid-1',
+          email: 'admin@course-platform.local',
+          full_name: 'Администратор Системы',
+          role: 'admin',
+          permissions: ['users:view_all', 'users:manage_roles', 'roles:manage', 'courses:create', 'payments:view_all'],
+        },
+      },
+    },
+  },
+
+  UserResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'usr-uuid-1' },
+          email: { type: 'string', example: 'student@example.com' },
+          full_name: { type: 'string', example: 'Иван Иванов' },
+          role: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'role-uuid-student' },
+              name: { type: 'string', example: 'student' },
+              description: { type: 'string', example: 'Слушатель курсов' },
+            },
+          },
+          courses: {
+            type: 'array',
+            items: { type: 'object' },
+            example: [{ id: 'course-1', title: 'Основы Golang', status: 'confirmed' }],
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        id: 'usr-uuid-1',
+        email: 'student@example.com',
+        full_name: 'Иван Иванов',
+        role: {
+          id: 'role-uuid-student',
+          name: 'student',
+          description: 'Слушатель курсов',
+        },
+        enrollments: [
+          {
+            id: 'enr-1',
+            status: 'confirmed',
+            course: { id: 'c-1', title: 'Основы Go', price: 30000 },
+          },
+        ],
+      },
+    },
+  },
+
+  UserListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          total: { type: 'integer', example: 12 },
+          users: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/UserResponse' },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        total: 2,
+        users: [
+          {
+            id: 'usr-1',
+            email: 'admin@course-platform.local',
+            full_name: 'Администратор Системы',
+            role: { name: 'admin' },
+          },
+          {
+            id: 'usr-2',
+            email: 'student@example.com',
+            full_name: 'Иван Иванов',
+            role: { name: 'student' },
+          },
+        ],
+      },
+    },
+  },
+
+  RoleResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'role-uuid-instructor' },
+          name: { type: 'string', example: 'instructor' },
+          description: { type: 'string', example: 'Преподаватель курсов' },
+          permissions: {
+            type: 'array',
+            items: { type: 'object' },
+            example: [
+              { id: 'perm-1', code: 'courses:create', description: 'Создание курсов' },
+              { id: 'perm-2', code: 'courses:edit', description: 'Редактирование своих курсов' },
+            ],
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        id: 'role-uuid-instructor',
+        name: 'instructor',
+        description: 'Преподаватель курсов',
+        permissions: [
+          { id: 'perm-1', code: 'courses:create', description: 'Создание курсов' },
+          { id: 'perm-2', code: 'courses:edit', description: 'Редактирование своих курсов' },
+          { id: 'perm-3', code: 'courses:view_students', description: 'Просмотр студентов курса' },
+        ],
+      },
+    },
+  },
+
+  RoleListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/RoleResponse' },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        { id: 'role-1', name: 'admin', description: 'Полный администратор платформы' },
+        { id: 'role-2', name: 'instructor', description: 'Преподаватель курсов' },
+        { id: 'role-3', name: 'student', description: 'Студент / Слушатель' },
+      ],
+    },
+  },
+
+  PermissionListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            code: { type: 'string' },
+            category: { type: 'string' },
+            description: { type: 'string' },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        { id: 'p-1', code: 'users:view_all', category: 'users', description: 'Просмотр всех пользователей' },
+        { id: 'p-2', code: 'courses:create', category: 'courses', description: 'Создание новых обучающих курсов' },
+        { id: 'p-3', code: 'roles:manage', category: 'roles', description: 'Управление ролями и правами RBAC' },
+      ],
+    },
+  },
+
+  CourseResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'c-uuid-1' },
+          title: { type: 'string', example: 'Разработка на Go и TypeScript' },
+          description: { type: 'string', example: 'Практический интенсив' },
+          price: { type: 'number', example: 45000 },
+          start_date: { type: 'string', example: '2026-11-01T10:00:00.000Z' },
+          max_seats: { type: 'integer', example: 25 },
+          available_seats: { type: 'integer', example: 24 },
+          status: { type: 'string', example: 'published' },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        id: 'c-uuid-1',
+        title: 'Разработка на Go и TypeScript',
+        description: 'Практический интенсив по созданию масштабируемых систем.',
+        price: 45000,
+        start_date: '2026-11-01T10:00:00.000Z',
+        max_seats: 25,
+        available_seats: 24,
+        status: 'published',
+        instructor: {
+          id: 'instr-1',
+          specialization: 'Golang, Highload',
+          user: { full_name: 'Алексей Архитекторов', email: 'alexey@instructor.local' },
+        },
+      },
+    },
+  },
+
+  CourseListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/CourseResponse' },
+      },
+      pagination: {
+        type: 'object',
+        properties: {
+          total: { type: 'integer', example: 10 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 1 },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        {
+          id: 'c-1',
+          title: 'Golang Microservices & Docker',
+          price: 45000,
+          start_date: '2026-11-01T10:00:00.000Z',
+          available_seats: 18,
+          max_seats: 25,
+          status: 'published',
+        },
+      ],
+      pagination: { total: 1, page: 1, limit: 10, totalPages: 1 },
+    },
+  },
+
+  CourseStudentsResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          courseId: { type: 'string', example: 'c-1' },
+          courseTitle: { type: 'string', example: 'Разработка на Go' },
+          totalStudents: { type: 'integer', example: 5 },
+          students: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                studentId: { type: 'string' },
+                fullName: { type: 'string' },
+                email: { type: 'string' },
+                status: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        courseId: 'c-1',
+        courseTitle: 'Разработка на Go',
+        totalStudents: 1,
+        students: [
+          {
+            enrollmentId: 'enr-1',
+            studentId: 'usr-student-1',
+            fullName: 'Иван Иванов',
+            email: 'student@example.com',
+            status: 'confirmed',
+            enrolledAt: '2026-10-04T02:00:00.000Z',
+          },
+        ],
+      },
+    },
+  },
+
+  InstructorResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'instr-1' },
+          bio: { type: 'string', example: 'Senior Go Developer' },
+          specialization: { type: 'string', example: 'Golang, Highload' },
+          rating: { type: 'number', example: 4.95 },
+          user: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'usr-1' },
+              full_name: { type: 'string', example: 'Алексей Архитекторов' },
+              email: { type: 'string', example: 'alex@mentor.ru' },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        id: 'instr-1',
+        bio: 'Senior Go Developer, 10 лет опыта в распределенных системах.',
+        specialization: 'Golang, Distributed Systems, Docker',
+        rating: 4.95,
+        user: { id: 'usr-1', full_name: 'Алексей Архитекторов', email: 'alex@mentor.ru' },
+      },
+    },
+  },
+
+  InstructorListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/InstructorResponse' },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        {
+          id: 'instr-1',
+          specialization: 'Golang, Highload',
+          rating: 4.95,
+          user: { full_name: 'Алексей Архитекторов', email: 'alex@mentor.ru' },
+        },
+      ],
+    },
+  },
+
+  InstructorStudentsResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          instructor: { type: 'object' },
+          totalStudents: { type: 'integer', example: 8 },
+          enrollments: { type: 'array', items: { type: 'object' } },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        totalStudents: 2,
+        enrollments: [
+          {
+            enrollmentId: 'enr-1',
+            studentName: 'Иван Иванов',
+            studentEmail: 'student@example.com',
+            courseTitle: 'Golang Architecture',
+            status: 'confirmed',
+          },
+        ],
+      },
+    },
+  },
+
+  EnrollmentResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Место успешно забронировано!' },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'enr-1234' },
+          status: { type: 'string', example: 'pending_payment' },
+          enrolled_at: { type: 'string', example: '2026-10-04T04:00:00.000Z' },
+          course: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'course-1' },
+              title: { type: 'string', example: 'Golang Microservices' },
+              price: { type: 'number', example: 45000 },
+              available_seats: { type: 'integer', example: 19 },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      message: 'Место успешно забронировано (статус: pending_payment). Перейдите к оплате.',
+      data: {
+        id: 'enr-1234',
+        status: 'pending_payment',
+        enrolled_at: '2026-10-04T04:00:00.000Z',
+        course: {
+          id: 'course-1',
+          title: 'Golang Microservices',
+          price: 45000,
+          available_seats: 19,
+        },
+      },
+    },
+  },
+
+  EnrollmentListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/EnrollmentResponse' },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        {
+          id: 'enr-1234',
+          status: 'confirmed',
+          course: { id: 'c-1', title: 'Golang Intensive', price: 45000 },
+          payments: [{ id: 'pay-1', status: 'succeeded', amount: 45000 }],
+        },
+      ],
+    },
+  },
+
+  CardResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Банковская карта успешно привязана (AES-256-GCM).' },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'card-1' },
+          card_holder: { type: 'string', example: 'IVAN IVANOV' },
+          last4: { type: 'string', example: '5678' },
+          exp_month: { type: 'string', example: '12' },
+          exp_year: { type: 'string', example: '28' },
+          is_default: { type: 'boolean', example: true },
+          created_at: { type: 'string', example: '2026-10-04T04:00:00.000Z' },
+        },
+      },
+    },
+    example: {
+      success: true,
+      message: 'Банковская карта успешно привязана (данные зашифрованы алгоритмом AES-256-GCM).',
+      data: {
+        id: 'card-1',
+        card_holder: 'IVAN IVANOV',
+        last4: '5678',
+        exp_month: '12',
+        exp_year: '28',
+        is_default: true,
+        created_at: '2026-10-04T04:00:00.000Z',
+      },
+    },
+  },
+
+  CardListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            card_holder: { type: 'string' },
+            last4: { type: 'string' },
+            exp_month: { type: 'string' },
+            exp_year: { type: 'string' },
+            is_default: { type: 'boolean' },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        {
+          id: 'card-1',
+          card_holder: 'IVAN IVANOV',
+          last4: '5678',
+          exp_month: '12',
+          exp_year: '28',
+          is_default: true,
+        },
+      ],
+    },
+  },
+
+  PaymentSuccessResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Оплата успешно завершена!' },
+      data: {
+        type: 'object',
+        properties: {
+          paymentId: { type: 'string', example: 'pay-1234' },
+          transactionRef: { type: 'string', example: 'tx_a8f9c1b2e3d4' },
+          amount: { type: 'number', example: 45000 },
+          status: { type: 'string', example: 'succeeded' },
+          paidAt: { type: 'string', example: '2026-10-04T04:10:00.000Z' },
+          course: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'course-1' },
+              title: { type: 'string', example: 'Golang Microservices' },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      success: true,
+      message: 'Оплата успешно завершена! Доступ к курсу активирован.',
+      data: {
+        paymentId: 'pay-1234',
+        transactionRef: 'tx_a8f9c1b2e3d4',
+        amount: 45000,
+        status: 'succeeded',
+        paidAt: '2026-10-04T04:10:00.000Z',
+        course: {
+          id: 'course-1',
+          title: 'Golang Microservices',
+          startDate: '2026-11-01T10:00:00.000Z',
+        },
+      },
+    },
+  },
+
+  MyPaymentsResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'array',
+        items: { type: 'object' },
+      },
+    },
+    example: {
+      success: true,
+      data: [
+        {
+          id: 'pay-1',
+          amount: 45000,
+          status: 'succeeded',
+          transaction_ref: 'tx_a8f9c1b2e3d4',
+          paid_at: '2026-10-04T04:10:00.000Z',
+          enrollment: {
+            course: { id: 'c-1', title: 'Golang Microservices', price: 45000 },
+          },
+        },
+      ],
+    },
+  },
+
+  PaymentListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          total: { type: 'integer', example: 1 },
+          payments: { type: 'array', items: { type: 'object' } },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        total: 1,
+        payments: [
+          {
+            id: 'pay-1',
+            amount: 45000,
+            status: 'succeeded',
+            transaction_ref: 'tx_a8f9c1b2e3d4',
+            paid_at: '2026-10-04T04:10:00.000Z',
+            user: { id: 'usr-1', full_name: 'Иван Иванов', email: 'student@example.com' },
+            enrollment: { course: { title: 'Golang Microservices', price: 45000 } },
+          },
+        ],
+      },
+    },
+  },
+
+  HealthResponse: {
+    type: 'object',
+    properties: {
+      status: { type: 'string', example: 'UP' },
+      timestamp: { type: 'string', example: '2026-10-04T04:20:00.000Z' },
+      database: { type: 'string', example: 'connected' },
+      uptimeSeconds: { type: 'integer', example: 3600 },
+    },
+    example: {
+      status: 'UP',
+      timestamp: '2026-10-04T04:20:00.000Z',
+      database: 'connected',
+      uptimeSeconds: 3600,
+    },
+  },
+
+  MetricsResponse: {
+    type: 'object',
+    properties: {
+      uptimeSeconds: { type: 'integer', example: 3600 },
+      totalRequestsServed: { type: 'integer', example: 254 },
+      memoryUsage: {
+        type: 'object',
+        properties: {
+          rssMB: { type: 'string', example: '85.40' },
+          heapTotalMB: { type: 'string', example: '42.10' },
+          heapUsedMB: { type: 'string', example: '31.25' },
+        },
+      },
+      nodeVersion: { type: 'string', example: 'v20.12.0' },
+      platform: { type: 'string', example: 'linux' },
+      recentAuditLogs: { type: 'array', items: { type: 'object' } },
+    },
+    example: {
+      uptimeSeconds: 3600,
+      totalRequestsServed: 254,
+      memoryUsage: { rssMB: '85.40', heapTotalMB: '42.10', heapUsedMB: '31.25' },
+      nodeVersion: 'v20.12.0',
+      platform: 'linux',
+      recentAuditLogs: [],
+    },
+  },
+
+  SuccessResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Операция успешно выполнена.' },
+    },
+    example: {
+      success: true,
+      message: 'Операция успешно выполнена.',
+    },
+  },
+
+  ErrorResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: false },
+      error: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', example: 'VALIDATION_ERROR' },
+          message: { type: 'string', example: 'Неверные параметры запроса.' },
+          details: { type: 'array', items: { type: 'object' } },
+        },
+      },
+    },
+    example: {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Неверные параметры запроса.',
+      },
+    },
+  },
+};
+
 export function generateSwaggerFromSwaggo(config: SwaggoDocConfig): any {
   const { info, basePath, controllersDir } = config;
 
@@ -68,6 +991,7 @@ export function generateSwaggerFromSwaggo(config: SwaggoDocConfig): any {
           description: 'Введите JWT Access токен (Bearer <token>)',
         },
       },
+      schemas: SWAGGER_SCHEMAS,
     },
     paths,
   };
@@ -117,31 +1041,56 @@ function processSwaggoBlock(block: string[], paths: Record<string, any>) {
         const paramDesc = descMatch ? descMatch[1] : '';
 
         if (paramIn === 'body') {
+          // paramType is e.g. "models.RegisterRequest" -> "RegisterRequest"
+          const cleanModelName = paramType.replace(/^models\./, '');
+          const schemaObj = SWAGGER_SCHEMAS[cleanModelName];
+
           requestBody = {
             required: paramRequired,
             description: paramDesc || 'Request payload',
             content: {
               'application/json': {
-                schema: {
-                  type: 'object',
-                },
+                schema: schemaObj
+                  ? { $ref: `#/components/schemas/${cleanModelName}` }
+                  : { type: 'object' },
+                ...(schemaObj?.example ? { example: schemaObj.example } : {}),
               },
             },
           };
         } else {
+          // Path / Query parameter
+          let exampleVal: any = undefined;
+          if (paramName === 'id' || paramName.endsWith('_id')) {
+            exampleVal = 'c1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c';
+          } else if (paramName === 'page') {
+            exampleVal = 1;
+          } else if (paramName === 'limit') {
+            exampleVal = 10;
+          } else if (paramName === 'search') {
+            exampleVal = 'Go';
+          } else if (paramName === 'role') {
+            exampleVal = 'student';
+          } else if (paramName === 'min_price') {
+            exampleVal = 10000;
+          } else if (paramName === 'max_price') {
+            exampleVal = 80000;
+          }
+
           parameters.push({
             name: paramName,
             in: paramIn,
             required: paramRequired,
             description: paramDesc,
             schema: {
-              type: paramType === 'int' ? 'integer' : paramType,
+              type: paramType === 'int' ? 'integer' : paramType === 'number' ? 'number' : 'string',
+              ...(exampleVal !== undefined ? { example: exampleVal } : {}),
             },
+            ...(exampleVal !== undefined ? { example: exampleVal } : {}),
           });
         }
       }
     } else if (line.startsWith('@Success') || line.startsWith('@Failure')) {
-      // Swaggo format: @Success 200 {object} models.User "Description"
+      // Swaggo format: @Success 200 {object} models.AuthResponse "Description"
       const raw = line.replace(/^@(Success|Failure)/, '').trim();
       const parts = raw.split(/\s+/);
       if (parts.length >= 1) {
@@ -149,13 +1098,22 @@ function processSwaggoBlock(block: string[], paths: Record<string, any>) {
         const descMatch = raw.match(/"([^"]+)"/);
         const respDesc = descMatch ? descMatch[1] : parts.slice(2).join(' ') || 'Response';
 
+        // Extract model reference (parts[2]) e.g. models.AuthResponse
+        let cleanModelName = '';
+        if (parts.length >= 3 && parts[1].includes('{object}')) {
+          cleanModelName = parts[2].replace(/^models\./, '');
+        }
+
+        const schemaObj = cleanModelName ? SWAGGER_SCHEMAS[cleanModelName] : null;
+
         responses[statusCode] = {
           description: respDesc,
           content: {
             'application/json': {
-              schema: {
-                type: 'object',
-              },
+              schema: schemaObj
+                ? { $ref: `#/components/schemas/${cleanModelName}` }
+                : { type: 'object' },
+              ...(schemaObj?.example ? { example: schemaObj.example } : {}),
             },
           },
         };
