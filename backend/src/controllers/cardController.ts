@@ -4,10 +4,15 @@ import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { encryptAES256GCM } from '../services/cryptoService.js';
 
 export class CardController {
-  /**
-   * GET /api/v1/cards
-   * Safe view of saved payment cards (never reveals encrypted payload)
-   */
+  // GetAllCards Godoc
+  // @Summary      Сохраненные банковские карты
+  // @Description  Безопасный просмотр масок карт без раскрытия шифротекста (OWASP A02, разрешение cards:manage)
+  // @Tags         cards
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.CardListResponse
+  // @Router       /cards [get]
   static async getAll(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
 
@@ -23,10 +28,17 @@ export class CardController {
     });
   }
 
-  /**
-   * POST /api/v1/cards
-   * Bind new card with AES-256-GCM encryption of sensitive data
-   */
+  // AddCard Godoc
+  // @Summary      Привязать банковскую карту
+  // @Description  Шифрование данных карты по алгоритму AES-256-GCM с контролем целостности (разрешение cards:manage)
+  // @Tags         cards
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        request  body      models.AddCardRequest  true  "Реквизиты карты"
+  // @Success      201      {object}  models.CardResponse
+  // @Failure      400      {object}  models.ErrorResponse
+  // @Router       /cards [post]
   static async addCard(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
     const { cleanCardNumber, card_holder, exp_month, exp_year, cleanCvv, is_default } = req.body;
@@ -70,10 +82,17 @@ export class CardController {
     });
   }
 
-  /**
-   * DELETE /api/v1/cards/:id
-   * Remove payment card
-   */
+  // DeleteCard Godoc
+  // @Summary      Удалить карту
+  // @Description  Удаление привязанной карты (разрешение cards:manage)
+  // @Tags         cards
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id   path      string  true  "Card ID"
+  // @Success      200  {object}  models.SuccessResponse
+  // @Failure      404  {object}  models.ErrorResponse
+  // @Router       /cards/{id} [delete]
   static async deleteCard(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const userId = req.user?.userId;

@@ -4,10 +4,17 @@ import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { sequelize } from '../config/database.js';
 
 export class EnrollmentController {
-  /**
-   * POST /api/v1/enrollments
-   * Reserve seat and create enrollment for course
-   */
+  // CreateEnrollment Godoc
+  // @Summary      Записаться на курс
+  // @Description  Бронирование места на курсе (разрешение enrollments:create)
+  // @Tags         enrollments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        request  body      models.CreateEnrollmentRequest  true  "ID курса"
+  // @Success      201      {object}  models.EnrollmentResponse
+  // @Failure      400      {object}  models.ErrorResponse
+  // @Router       /enrollments [post]
   static async create(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { course_id } = req.body;
     const userId = req.user?.userId;
@@ -101,10 +108,15 @@ export class EnrollmentController {
     }
   }
 
-  /**
-   * GET /api/v1/enrollments/my
-   * Get authenticated student's enrollments
-   */
+  // GetMyEnrollments Godoc
+  // @Summary      Мои записи на курсы
+  // @Description  Список курсов текущего студента (разрешение enrollments:view_my)
+  // @Tags         enrollments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.EnrollmentListResponse
+  // @Router       /enrollments/my [get]
   static async getMy(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
 
@@ -137,10 +149,15 @@ export class EnrollmentController {
     });
   }
 
-  /**
-   * GET /api/v1/enrollments/instructor
-   * Get enrollments for instructor's courses
-   */
+  // GetForInstructor Godoc
+  // @Summary      Записи студентов на курсы преподавателя
+  // @Description  Просмотр записей студентов для преподавателя (разрешение enrollments:view_instructor)
+  // @Tags         enrollments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.EnrollmentListResponse
+  // @Router       /enrollments/instructor [get]
   static async getForInstructor(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
     const canViewAll = req.user?.permissions?.includes('courses:view_all');
@@ -179,10 +196,17 @@ export class EnrollmentController {
     });
   }
 
-  /**
-   * DELETE /api/v1/enrollments/:id
-   * Cancel enrollment and release reserved seat
-   */
+  // CancelEnrollment Godoc
+  // @Summary      Отменить запись на курс
+  // @Description  Отмена записи с возвратом места в квоту (разрешение enrollments:cancel)
+  // @Tags         enrollments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id   path      string  true  "Enrollment ID"
+  // @Success      200  {object}  models.SuccessResponse
+  // @Failure      403  {object}  models.ErrorResponse
+  // @Router       /enrollments/{id} [delete]
   static async cancel(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const userId = req.user?.userId;

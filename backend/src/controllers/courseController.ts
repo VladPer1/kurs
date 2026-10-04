@@ -4,10 +4,20 @@ import { Course, Instructor, User, Enrollment } from '../models/index.js';
 import { AuthenticatedRequest } from '../middleware/authJwt.js';
 
 export class CourseController {
-  /**
-   * GET /api/v1/courses
-   * Public catalog with pagination and filters
-   */
+  // GetAllCourses Godoc
+  // @Summary      Каталог курсов
+  // @Description  Каталог опубликованных курсов с фильтрацией, пагинацией и поиском
+  // @Tags         courses
+  // @Accept       json
+  // @Produce      json
+  // @Param        page           query     int     false  "Номер страницы"
+  // @Param        limit          query     int     false  "Количество на страницу"
+  // @Param        search         query     string  false  "Поиск по названию или описанию"
+  // @Param        min_price      query     number  false  "Минимальная цена"
+  // @Param        max_price      query     number  false  "Максимальная цена"
+  // @Param        instructor_id  query     string  false  "ID преподавателя"
+  // @Success      200            {object}  models.CourseListResponse
+  // @Router       /courses [get]
   static async getAll(req: Request, res: Response): Promise<void> {
     const page = parseInt(req.query.page as string, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit as string, 10) || 10, 50);
@@ -73,9 +83,16 @@ export class CourseController {
     });
   }
 
-  /**
-   * GET /api/v1/courses/:id
-   */
+  // GetCourseByID Godoc
+  // @Summary      Детали курса по ID
+  // @Description  Возвращает полную информацию о курсе
+  // @Tags         courses
+  // @Accept       json
+  // @Produce      json
+  // @Param        id   path      string  true  "Course ID"
+  // @Success      200  {object}  models.CourseResponse
+  // @Failure      404  {object}  models.ErrorResponse
+  // @Router       /courses/{id} [get]
   static async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const course = await Course.findByPk(id, {
@@ -108,30 +125,56 @@ export class CourseController {
     });
   }
 
-  /**
-   * POST /api/v1/courses
-   * Create course (permission: courses:create)
-   */
+  // CreateCourse Godoc
+  // @Summary      Создать курс
+  // @Description  Создание нового курса (требуется особое разрешение courses:create)
+  // @Tags         courses
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        request  body      models.CreateCourseRequest  true  "Данные курса"
+  // @Success      201      {object}  models.CourseResponse
+  // @Failure      400      {object}  models.ErrorResponse
+  // @Failure      403      {object}  models.ErrorResponse
+  // @Router       /courses [post]
   static async create(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { title, description, price, start_date, max_seats, instructor_id, status } = req.body;
 
     let targetInstructorId = instructor_id;
 
-    // If caller has instructors:manage, they can assign any instructor_id, otherwise resolve their own instructor_id
-    const canManageAllInstructors = req.user?.permissions?.includes('instructors:manage');
-    if (!targetInstructorId || !canManageAllInstructors) {
-      const instructorProfile = await Instructor.findOne({ where: { user_id: req.user?.userId } });
-      if (!instructorProfile) {
-        res.status(403).json({
+    if (targetInstructorId) {
+      const instructor = await Instructor.findByPk(targetInstructorId);
+      if (!instructor) {
+        res.status(404).json({
           success: false,
           error: {
-            code: 'INSTRUCTOR_PROFILE_MISSING',
-            message: 'Для создания курса необходимо иметь профиль преподавателя.',
+            code: 'INSTRUCTOR_NOT_FOUND',
+            message: 'Указанный преподаватель (instructor_id) не найден.',
           },
         });
         return;
       }
-      targetInstructorId = instructorProfile.id;
+    } else {
+      // Find caller's instructor profile
+      let instructorProfile = await Instructor.findOne({ where: { user_id: req.user?.userId } });
+      if (!instructorProfile) {
+        // If caller has permission courses:create, auto-resolve instructor:
+        // Use first active instructor or auto-create an instructor profile for the caller
+        const firstInstructor = await Instructor.findOne();
+        if (firstInstructor) {
+          targetInstructorId = firstInstructor.id;
+        } else {
+          instructorProfile = await Instructor.create({
+            user_id: req.user?.userId!,
+            bio: 'Преподаватель учебной платформы',
+            specialization: 'Общие курсы',
+            rating: 5.0,
+          });
+          targetInstructorId = instructorProfile.id;
+        }
+      } else {
+        targetInstructorId = instructorProfile.id;
+      }
     }
 
     const course = await Course.create({
@@ -145,17 +188,36 @@ export class CourseController {
       status: status || 'published',
     });
 
+    const populatedCourse = await Course.findByPk(course.id, {
+      include: [
+        {
+          model: Instructor,
+          as: 'instructor',
+          include: [{ model: User, as: 'user', attributes: ['id', 'full_name', 'email'] }],
+        },
+      ],
+    });
+
     res.status(201).json({
       success: true,
-      message: 'Курс успешно создан.',
-      data: course,
+      message: 'Курс успешно создан (разрешение courses:create подтверждено).',
+      data: populatedCourse,
     });
   }
 
-  /**
-   * PUT /api/v1/courses/:id
-   * Update course (permission: courses:edit)
-   */
+  // UpdateCourse Godoc
+  // @Summary      Редактировать курс
+  // @Description  Редактирование курса (разрешение courses:edit, только автор или админ)
+  // @Tags         courses
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id       path      string                      true  "Course ID"
+  // @Param        request  body      models.UpdateCourseRequest  true  "Обновляемые поля"
+  // @Success      200      {object}  models.CourseResponse
+  // @Failure      403      {object}  models.ErrorResponse
+  // @Failure      404      {object}  models.ErrorResponse
+  // @Router       /courses/{id} [put]
   static async update(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const { title, description, price, start_date, max_seats, status } = req.body;
@@ -209,10 +271,18 @@ export class CourseController {
     });
   }
 
-  /**
-   * DELETE /api/v1/courses/:id
-   * Delete course (permission: courses:delete)
-   */
+  // DeleteCourse Godoc
+  // @Summary      Удалить курс
+  // @Description  Удаление курса (разрешение courses:delete, запрещено при наличии активных записей)
+  // @Tags         courses
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id   path      string  true  "Course ID"
+  // @Success      200  {object}  models.SuccessResponse
+  // @Failure      400  {object}  models.ErrorResponse
+  // @Failure      403  {object}  models.ErrorResponse
+  // @Router       /courses/{id} [delete]
   static async delete(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
 
@@ -264,11 +334,18 @@ export class CourseController {
     });
   }
 
-  /**
-   * GET /api/v1/courses/:id/students
-   * Get students enrolled in a specific course
-   * Requires permission: courses:view_students
-   */
+  // GetCourseStudents Godoc
+  // @Summary      Список студентов курса
+  // @Description  Возвращает список студентов конкретного курса (разрешение courses:view_students)
+  // @Tags         courses
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id   path      string  true  "Course ID"
+  // @Success      200  {object}  models.CourseStudentsResponse
+  // @Failure      403  {object}  models.ErrorResponse
+  // @Failure      404  {object}  models.ErrorResponse
+  // @Router       /courses/{id}/students [get]
   static async getCourseStudents(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const course = await Course.findByPk(id, {

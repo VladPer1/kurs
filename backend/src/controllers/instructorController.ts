@@ -3,10 +3,14 @@ import { Instructor, User, Course, Role, Enrollment } from '../models/index.js';
 import { AuthenticatedRequest } from '../middleware/authJwt.js';
 
 export class InstructorController {
-  /**
-   * GET /api/v1/instructors
-   * Public list of instructors with rating and courses
-   */
+  // GetAllInstructors Godoc
+  // @Summary      Список преподавателей
+  // @Description  Публичный список преподавателей с рейтингом и курсами
+  // @Tags         instructors
+  // @Accept       json
+  // @Produce      json
+  // @Success      200  {object}  models.InstructorListResponse
+  // @Router       /instructors [get]
   static async getAll(_req: Request, res: Response): Promise<void> {
     const instructors = await Instructor.findAll({
       include: [
@@ -32,10 +36,16 @@ export class InstructorController {
     });
   }
 
-  /**
-   * GET /api/v1/instructors/:id
-   * Get single instructor profile
-   */
+  // GetInstructorByID Godoc
+  // @Summary      Профиль преподавателя по ID
+  // @Description  Возвращает информацию о преподавателе
+  // @Tags         instructors
+  // @Accept       json
+  // @Produce      json
+  // @Param        id   path      string  true  "Instructor ID"
+  // @Success      200  {object}  models.InstructorResponse
+  // @Failure      404  {object}  models.ErrorResponse
+  // @Router       /instructors/{id} [get]
   static async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const instructor = await Instructor.findByPk(id, {
@@ -68,10 +78,18 @@ export class InstructorController {
     });
   }
 
-  /**
-   * POST /api/v1/instructors
-   * Create instructor profile for user (requires instructors:manage or admin)
-   */
+  // CreateInstructor Godoc
+  // @Summary      Создать профиль преподавателя
+  // @Description  Создает профиль преподавателя (разрешение instructors:manage)
+  // @Tags         instructors
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        request  body      models.CreateInstructorRequest  true  "Данные профиля"
+  // @Success      201      {object}  models.InstructorResponse
+  // @Failure      400      {object}  models.ErrorResponse
+  // @Failure      409      {object}  models.ErrorResponse
+  // @Router       /instructors [post]
   static async create(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { user_id, bio, specialization, rating } = req.body;
 
@@ -113,10 +131,19 @@ export class InstructorController {
     });
   }
 
-  /**
-   * PUT /api/v1/instructors/:id
-   * Update instructor bio/specialization
-   */
+  // UpdateInstructor Godoc
+  // @Summary      Обновить профиль преподавателя
+  // @Description  Обновление био, специализации и рейтинга (разрешение instructors:manage)
+  // @Tags         instructors
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id       path      string                          true  "Instructor ID"
+  // @Param        request  body      models.UpdateInstructorRequest  true  "Данные профиля"
+  // @Success      200      {object}  models.InstructorResponse
+  // @Failure      403      {object}  models.ErrorResponse
+  // @Failure      404      {object}  models.ErrorResponse
+  // @Router       /instructors/{id} [put]
   static async update(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const { bio, specialization, rating } = req.body;
@@ -153,11 +180,16 @@ export class InstructorController {
     });
   }
 
-  /**
-   * GET /api/v1/instructors/my/students
-   * Get all students enrolled in the instructor's courses
-   * Requires permission: instructors:view_students
-   */
+  // GetMyStudents Godoc
+  // @Summary      Список студентов преподавателя
+  // @Description  Просмотр всех студентов, обучающихся на курсах преподавателя (разрешение instructors:view_students)
+  // @Tags         instructors
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.InstructorStudentsResponse
+  // @Failure      403  {object}  models.ErrorResponse
+  // @Router       /instructors/my/students [get]
   static async getMyStudents(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
     const canViewAll = req.user?.permissions?.includes('users:view_all');

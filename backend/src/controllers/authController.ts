@@ -5,10 +5,17 @@ import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { ENV } from '../config/env.js';
 
 export class AuthController {
-  /**
-   * POST /api/v1/auth/register
-   * Registers a new user with default 'student' role
-   */
+  // Register Godoc
+  // @Summary      Регистрация нового студента
+  // @Description  Регистрирует нового пользователя с базовой ролью student и хеширует пароль bcrypt
+  // @Tags         auth
+  // @Accept       json
+  // @Produce      json
+  // @Param        request  body      models.RegisterRequest  true  "Данные регистрации"
+  // @Success      201      {object}  models.AuthResponse
+  // @Failure      400      {object}  models.ErrorResponse
+  // @Failure      409      {object}  models.ErrorResponse
+  // @Router       /auth/register [post]
   static async register(req: Request, res: Response): Promise<void> {
     const { email, password, full_name } = req.body;
 
@@ -81,10 +88,17 @@ export class AuthController {
     });
   }
 
-  /**
-   * POST /api/v1/auth/login
-   * Login with brute-force lock protection and httpOnly cookie
-   */
+  // Login Godoc
+  // @Summary      Вход в систему
+  // @Description  Аутентификация с защитой от брутфорса (блокировка на 15 мин после 5 попыток)
+  // @Tags         auth
+  // @Accept       json
+  // @Produce      json
+  // @Param        request  body      models.LoginRequest  true  "Учетные данные"
+  // @Success      200      {object}  models.AuthResponse
+  // @Failure      401      {object}  models.ErrorResponse
+  // @Failure      423      {object}  models.ErrorResponse
+  // @Router       /auth/login [post]
   static async login(req: Request, res: Response): Promise<void> {
     const { email, password } = req.body;
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
@@ -182,10 +196,15 @@ export class AuthController {
     });
   }
 
-  /**
-   * POST /api/v1/auth/refresh
-   * Rotate access token using httpOnly cookie or body token
-   */
+  // RefreshToken Godoc
+  // @Summary      Обновить Access Token
+  // @Description  Выпуск нового токена по Refresh Token из HttpOnly cookie
+  // @Tags         auth
+  // @Accept       json
+  // @Produce      json
+  // @Success      200  {object}  models.TokenResponse
+  // @Failure      401  {object}  models.ErrorResponse
+  // @Router       /auth/refresh [post]
   static async refresh(req: Request, res: Response): Promise<void> {
     const token = req.cookies?.refreshToken || req.body?.refreshToken;
 
@@ -253,9 +272,15 @@ export class AuthController {
     }
   }
 
-  /**
-   * POST /api/v1/auth/logout
-   */
+  // Logout Godoc
+  // @Summary      Выход из системы
+  // @Description  Очистка сессионных cookie
+  // @Tags         auth
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.SuccessResponse
+  // @Router       /auth/logout [post]
   static async logout(req: AuthenticatedRequest, res: Response): Promise<void> {
     if (req.user?.userId) {
       await User.update({ refresh_token: null }, { where: { id: req.user.userId } });
@@ -273,9 +298,16 @@ export class AuthController {
     });
   }
 
-  /**
-   * GET /api/v1/auth/me
-   */
+  // GetMe Godoc
+  // @Summary      Текущий аутентифицированный пользователь
+  // @Description  Возвращает профиль текущего пользователя и его актуальные права (RBAC)
+  // @Tags         auth
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.CurrentUserResponse
+  // @Failure      401  {object}  models.ErrorResponse
+  // @Router       /auth/me [get]
   static async me(req: AuthenticatedRequest, res: Response): Promise<void> {
     if (!req.user) {
       res.status(401).json({

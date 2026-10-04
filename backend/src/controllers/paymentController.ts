@@ -5,10 +5,17 @@ import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { sequelize } from '../config/database.js';
 
 export class PaymentController {
-  /**
-   * POST /api/v1/payments/checkout
-   * Execute payment for enrollment using saved or new payment method
-   */
+  // CheckoutPayment Godoc
+  // @Summary      Оплата курса
+  // @Description  Проведение оплаты за выбранный курс в ACID-транзакции (разрешение payments:create)
+  // @Tags         payments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        request  body      models.CheckoutPaymentRequest  true  "ID записи и карты"
+  // @Success      200      {object}  models.PaymentSuccessResponse
+  // @Failure      400      {object}  models.ErrorResponse
+  // @Router       /payments/checkout [post]
   static async checkout(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
     const { enrollment_id, payment_method_id } = req.body;
@@ -59,14 +66,22 @@ export class PaymentController {
       if (!pm) {
         res.status(400).json({
           success: false,
-          error: { code: 'INVALID_PAYMENT_METHOD', message: 'Указанная банковская карта не найдена.' },
+          error: { code: 'PAYMENT_METHOD_INVALID', message: 'Указанная карта не найдена в вашем профиле.' },
         });
         return;
       }
       verifiedPaymentMethodId = pm.id;
+    } else {
+      // Find default card
+      const defaultCard = await PaymentMethod.findOne({
+        where: { user_id: userId, is_default: true },
+      });
+      if (defaultCard) {
+        verifiedPaymentMethodId = defaultCard.id;
+      }
     }
 
-    const amount = enrollment.course ? enrollment.course.price : 0.0;
+    const amount = enrollment.course.price;
     const transaction_ref = `tx_${uuidv4().replace(/-/g, '').slice(0, 16)}`;
 
     // Process payment in ACID transaction
@@ -114,10 +129,15 @@ export class PaymentController {
     }
   }
 
-  /**
-   * GET /api/v1/payments/my
-   * Get user's payment history
-   */
+  // GetMyPayments Godoc
+  // @Summary      История платежей пользователя
+  // @Description  История оплат текущего пользователя (разрешение payments:view_my)
+  // @Tags         payments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.MyPaymentsResponse
+  // @Router       /payments/my [get]
   static async getMyPayments(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
 
@@ -144,11 +164,16 @@ export class PaymentController {
     });
   }
 
-  /**
-   * GET /api/v1/payments
-   * List all platform payments (Admin only)
-   * Requires permission: payments:view_all
-   */
+  // GetAllPayments Godoc
+  // @Summary      Реестр всех платежей платформы
+  // @Description  Полный журнал оплат курсов (Только Администратор, разрешение payments:view_all)
+  // @Tags         payments
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Success      200  {object}  models.PaymentListResponse
+  // @Failure      403  {object}  models.ErrorResponse
+  // @Router       /payments [get]
   static async getAllPayments(_req: AuthenticatedRequest, res: Response): Promise<void> {
     const payments = await Payment.findAll({
       include: [

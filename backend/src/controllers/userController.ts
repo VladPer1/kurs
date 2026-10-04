@@ -4,11 +4,19 @@ import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { Op } from 'sequelize';
 
 export class UserController {
-  /**
-   * GET /api/v1/users
-   * Get all users with their roles, enrollments, and teaching courses
-   * Requires permission: users:view_all (Admin only by default)
-   */
+  // GetAllUsers Godoc
+  // @Summary      Получить список всех пользователей системы с их курсами
+  // @Description  Возвращает всех пользователей со связанными курсами (Только для Администратора, пермишн users:view_all)
+  // @Tags         users
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        search  query     string  false  "Поиск по имени или email"
+  // @Param        role    query     string  false  "Фильтр по роли (admin, instructor, student)"
+  // @Success      200     {object}  models.UserListResponse  "Список пользователей"
+  // @Failure      401     {object}  models.ErrorResponse      "Не авторизован"
+  // @Failure      403     {object}  models.ErrorResponse      "Доступ запрещен (требуется users:view_all)"
+  // @Router       /users [get]
   static async getAllUsers(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { role, search } = req.query;
 
@@ -116,11 +124,19 @@ export class UserController {
     });
   }
 
-  /**
-   * GET /api/v1/users/:id
-   * Get single user details by ID
-   * Requires permission: users:view_all
-   */
+  // GetUserByID Godoc
+  // @Summary      Получить пользователя по ID
+  // @Description  Возвращает данные пользователя по его уникальному идентификатору со связанными курсами
+  // @Tags         users
+  // @Accept       json
+  // @Produce      json
+  // @Security     BearerAuth
+  // @Param        id   path      string  true  "User ID (UUID)"
+  // @Success      200  {object}  models.UserResponse   "Детальная информация о пользователе"
+  // @Failure      401  {object}  models.ErrorResponse  "Не авторизован"
+  // @Failure      403  {object}  models.ErrorResponse  "Доступ запрещен"
+  // @Failure      404  {object}  models.ErrorResponse  "Пользователь не найден"
+  // @Router       /users/{id} [get]
   static async getUserById(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
 
