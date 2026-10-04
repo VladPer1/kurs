@@ -36,8 +36,6 @@ Role.init(
   {
     sequelize,
     tableName: 'roles',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    timestamps: false,
   }
 );

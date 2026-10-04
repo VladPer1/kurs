@@ -89,7 +89,7 @@ export async function ensureSchemaCompatibility(sequelize: Sequelize): Promise<v
     if (dialect === 'postgres') {
       // 1. Check table renames
       const tablesResult: any[] = await sequelize.query(
-        `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';`,
+        `SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() OR table_schema = 'public';`,
         { type: QueryTypes.SELECT }
       );
       const existingTables = new Set(tablesResult.map((t) => t.table_name || t.TABLE_NAME));
@@ -103,28 +103,47 @@ export async function ensureSchemaCompatibility(sequelize: Sequelize): Promise<v
         }
       }
 
-      // 2. Check column renames for each table
+      // 2. Check and rename columns for each table
       for (const [tableName, mappings] of Object.entries(TABLES_TO_MIGRATE)) {
-        if (!existingTables.has(tableName)) continue;
+        const matchingTable = Array.from(existingTables).find(
+          (t) => t.toLowerCase() === tableName.toLowerCase()
+        );
+        if (!matchingTable) continue;
 
         const columnsResult: any[] = await sequelize.query(
-          `SELECT column_name FROM information_schema.columns WHERE table_name = :tableName AND table_schema = 'public';`,
+          `SELECT column_name FROM information_schema.columns 
+           WHERE (table_name = :matchingTable OR table_name = :lowerTable)
+             AND (table_schema = current_schema() OR table_schema = 'public');`,
           {
-            replacements: { tableName },
+            replacements: { matchingTable, lowerTable: tableName.toLowerCase() },
             type: QueryTypes.SELECT,
           }
         );
-        const existingColumns = new Set(columnsResult.map((c) => c.column_name || c.COLUMN_NAME));
+        const actualCols = columnsResult.map((c) => c.column_name || c.COLUMN_NAME);
 
         for (const mapping of mappings) {
-          if (existingColumns.has(mapping.oldCol) && !existingColumns.has(mapping.newCol)) {
-            logger.info(`Migrating column "${tableName}"."${mapping.oldCol}" -> "${mapping.newCol}"`);
+          // Find matching old column (exact or case-insensitive)
+          const foundOld = actualCols.find((c) => c === mapping.oldCol || c.toLowerCase() === mapping.oldCol.toLowerCase());
+          const foundNew = actualCols.find((c) => c === mapping.newCol || c.toLowerCase() === mapping.newCol.toLowerCase());
+
+          if (foundOld && !foundNew) {
+            logger.info(`Migrating column "${matchingTable}"."${foundOld}" -> "${mapping.newCol}"`);
             await sequelize.query(
-              `ALTER TABLE "${tableName}" RENAME COLUMN "${mapping.oldCol}" TO "${mapping.newCol}";`
+              `ALTER TABLE "${matchingTable}" RENAME COLUMN "${foundOld}" TO "${mapping.newCol}";`
             );
-            existingColumns.delete(mapping.oldCol);
-            existingColumns.add(mapping.newCol);
           }
+        }
+
+        // 3. Fix potential NULL values in timestamp columns so sync({ alter: true }) won't fail
+        try {
+          await sequelize.query(`UPDATE "${matchingTable}" SET "created_at" = NOW() WHERE "created_at" IS NULL;`);
+        } catch {
+          // Table may not have created_at, ignore
+        }
+        try {
+          await sequelize.query(`UPDATE "${matchingTable}" SET "updated_at" = NOW() WHERE "updated_at" IS NULL;`);
+        } catch {
+          // Table may not have updated_at, ignore
         }
       }
     } else if (dialect === 'sqlite') {
@@ -141,19 +160,20 @@ export async function ensureSchemaCompatibility(sequelize: Sequelize): Promise<v
           `PRAGMA table_info("${tableName}");`,
           { type: QueryTypes.SELECT }
         );
-        const existingColumns = new Set(columnsResult.map((c) => c.name));
+        const actualCols = columnsResult.map((c) => c.name);
 
         for (const mapping of mappings) {
-          if (existingColumns.has(mapping.oldCol) && !existingColumns.has(mapping.newCol)) {
+          const foundOld = actualCols.find((c) => c === mapping.oldCol || c.toLowerCase() === mapping.oldCol.toLowerCase());
+          const foundNew = actualCols.find((c) => c === mapping.newCol || c.toLowerCase() === mapping.newCol.toLowerCase());
+
+          if (foundOld && !foundNew) {
             try {
-              logger.info(`Migrating SQLite column "${tableName}"."${mapping.oldCol}" -> "${mapping.newCol}"`);
+              logger.info(`Migrating SQLite column "${tableName}"."${foundOld}" -> "${mapping.newCol}"`);
               await sequelize.query(
-                `ALTER TABLE "${tableName}" RENAME COLUMN "${mapping.oldCol}" TO "${mapping.newCol}";`
+                `ALTER TABLE "${tableName}" RENAME COLUMN "${foundOld}" TO "${mapping.newCol}";`
               );
-              existingColumns.delete(mapping.oldCol);
-              existingColumns.add(mapping.newCol);
             } catch (err: any) {
-              logger.warn(`Could not rename column ${tableName}.${mapping.oldCol}: ${err.message}`);
+              logger.warn(`Could not rename column ${tableName}.${foundOld}: ${err.message}`);
             }
           }
         }
