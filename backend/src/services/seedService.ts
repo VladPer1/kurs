@@ -13,6 +13,7 @@ import {
 import { AuthService } from './authService.js';
 import { encryptAES256GCM } from './cryptoService.js';
 import { logger } from '../config/logger.js';
+import { ensureSchemaCompatibility } from '../config/dbMigration.js';
 
 export const INITIAL_PERMISSIONS = [
   // 1. Users
@@ -54,7 +55,15 @@ export const INITIAL_PERMISSIONS = [
 
 export async function seedDatabase(): Promise<void> {
   try {
-    await sequelize.sync();
+    // 0. Ensure schema compatibility for databases created before snake_case migration
+    await ensureSchemaCompatibility(sequelize);
+
+    try {
+      await sequelize.sync({ alter: true });
+    } catch (alterErr: any) {
+      logger.warn(`sequelize.sync({ alter: true }) notice: ${alterErr.message}. Falling back to standard sync.`);
+      await sequelize.sync();
+    }
     logger.info('Database tables synchronized successfully.');
 
     // 1. Seed Permissions

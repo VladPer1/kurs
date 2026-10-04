@@ -15,6 +15,10 @@ if (ENV.DATABASE_URL && ENV.DATABASE_URL.startsWith('postgres')) {
     dialectOptions: {
       ssl: process.env.DB_SSL === 'true' ? { require: true, rejectUnauthorized: false } : false,
     },
+    define: {
+      underscored: true,
+      timestamps: true,
+    },
   });
 } else {
   // Use persistent SQLite database with built-in node:sqlite engine
