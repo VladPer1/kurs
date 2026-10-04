@@ -15,12 +15,17 @@ export interface SwaggoDocConfig {
 export const SWAGGER_SCHEMAS: Record<string, any> = {
   RegisterRequest: {
     type: 'object',
-    required: ['email', 'password', 'full_name'],
+    required: ['email', 'password', 'full_name', 'role'],
     properties: {
       email: { type: 'string', format: 'email', example: 'student@example.com' },
       password: { type: 'string', minLength: 8, example: 'StudentSecurePass123!' },
       full_name: { type: 'string', example: 'Иван Иванов' },
-      role: { type: 'string', enum: ['student', 'instructor'], example: 'student' },
+      role: {
+        type: 'string',
+        enum: ['student', 'instructor', 'manager'],
+        example: 'student',
+        description: 'Обязательная роль пользователя (student, instructor, manager)',
+      },
     },
     example: {
       email: 'student@example.com',
@@ -183,21 +188,21 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
 
   AddCardRequest: {
     type: 'object',
-    required: ['cleanCardNumber', 'card_holder', 'exp_month', 'exp_year', 'cleanCvv'],
+    required: ['card_number', 'card_holder', 'exp_month', 'exp_year', 'cvv'],
     properties: {
-      cleanCardNumber: { type: 'string', example: '4532758812345678' },
-      card_holder: { type: 'string', example: 'IVAN IVANOV' },
-      exp_month: { type: 'string', example: '12' },
-      exp_year: { type: 'string', example: '28' },
-      cleanCvv: { type: 'string', example: '789' },
+      card_number: { type: 'string', example: '4532758812345678', description: '16-значный номер банковской карты' },
+      card_holder: { type: 'string', example: 'IVAN IVANOV', description: 'Имя держателя карты латиницей' },
+      exp_month: { type: 'string', example: '12', description: 'Месяц окончания (01-12)' },
+      exp_year: { type: 'string', example: '2028', description: 'Год окончания (YYYY)' },
+      cvv: { type: 'string', example: '789', description: '3 или 4 цифры кода CVV' },
       is_default: { type: 'boolean', example: true },
     },
     example: {
-      cleanCardNumber: '4532758812345678',
+      card_number: '4532758812345678',
       card_holder: 'IVAN IVANOV',
       exp_month: '12',
-      exp_year: '28',
-      cleanCvv: '789',
+      exp_year: '2028',
+      cvv: '789',
       is_default: true,
     },
   },
@@ -215,6 +220,25 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
     },
   },
 
+  TokenResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          access_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJzdHVkZW50In0...',
+      },
+    },
+  },
+
   // Response Models
   AuthResponse: {
     type: 'object',
@@ -224,15 +248,17 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       data: {
         type: 'object',
         properties: {
-          accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+          access_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
           user: {
             type: 'object',
+            required: ['id', 'email', 'full_name', 'role'],
             properties: {
               id: { type: 'string', example: 'usr-uuid-1' },
               email: { type: 'string', example: 'admin@course-platform.local' },
               full_name: { type: 'string', example: 'Администратор Системы' },
               role: {
                 type: 'object',
+                required: ['id', 'name', 'permissions'],
                 properties: {
                   id: { type: 'string', example: 'role-uuid-admin' },
                   name: { type: 'string', example: 'admin' },
@@ -259,7 +285,7 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       success: true,
       message: 'Аутентификация успешна.',
       data: {
-        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJhZG1pbiJ9...',
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3ItMSIsInJvbGUiOiJhZG1pbiJ9...',
         user: {
           id: 'usr-uuid-1',
           email: 'admin@course-platform.local',
@@ -293,6 +319,7 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
           full_name: { type: 'string', example: 'Администратор Системы' },
           role: {
             type: 'object',
+            required: ['id', 'name', 'permissions'],
             properties: {
               id: { type: 'string', example: 'role-uuid-admin' },
               name: { type: 'string', example: 'admin' },
@@ -337,12 +364,14 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       success: { type: 'boolean', example: true },
       data: {
         type: 'object',
+        required: ['id', 'email', 'full_name', 'role'],
         properties: {
           id: { type: 'string', example: 'usr-uuid-1' },
           email: { type: 'string', example: 'student@example.com' },
           full_name: { type: 'string', example: 'Иван Иванов' },
           role: {
             type: 'object',
+            required: ['id', 'name', 'permissions'],
             properties: {
               id: { type: 'string', example: 'role-uuid-student' },
               name: { type: 'string', example: 'student' },
@@ -477,6 +506,31 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
     },
   },
 
+  AssignRoleResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Пользователю успешно назначена роль instructor.' },
+      data: {
+        type: 'object',
+        properties: {
+          user_id: { type: 'string', example: 'usr-uuid-1' },
+          email: { type: 'string', example: 'student@example.com' },
+          role: { type: 'string', example: 'instructor' },
+        },
+      },
+    },
+    example: {
+      success: true,
+      message: 'Пользователю успешно назначена роль instructor.',
+      data: {
+        user_id: 'usr-uuid-1',
+        email: 'student@example.com',
+        role: 'instructor',
+      },
+    },
+  },
+
   PermissionListResponse: {
     type: 'object',
     properties: {
@@ -556,7 +610,7 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
           total: { type: 'integer', example: 10 },
           page: { type: 'integer', example: 1 },
           limit: { type: 'integer', example: 10 },
-          totalPages: { type: 'integer', example: 1 },
+          total_pages: { type: 'integer', example: 1 },
         },
       },
     },
@@ -573,7 +627,7 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
           status: 'published',
         },
       ],
-      pagination: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      pagination: { total: 1, page: 1, limit: 10, total_pages: 1 },
     },
   },
 
@@ -584,16 +638,16 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       data: {
         type: 'object',
         properties: {
-          courseId: { type: 'string', example: 'c-1' },
-          courseTitle: { type: 'string', example: 'Разработка на Go' },
-          totalStudents: { type: 'integer', example: 5 },
+          course_id: { type: 'string', example: 'c-1' },
+          course_title: { type: 'string', example: 'Разработка на Go' },
+          total_students: { type: 'integer', example: 5 },
           students: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
-                studentId: { type: 'string' },
-                fullName: { type: 'string' },
+                student_id: { type: 'string' },
+                full_name: { type: 'string' },
                 email: { type: 'string' },
                 status: { type: 'string' },
               },
@@ -605,17 +659,17 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
     example: {
       success: true,
       data: {
-        courseId: 'c-1',
-        courseTitle: 'Разработка на Go',
-        totalStudents: 1,
+        course_id: 'c-1',
+        course_title: 'Разработка на Go',
+        total_students: 1,
         students: [
           {
-            enrollmentId: 'enr-1',
-            studentId: 'usr-student-1',
-            fullName: 'Иван Иванов',
+            enrollment_id: 'enr-1',
+            student_id: 'usr-student-1',
+            full_name: 'Иван Иванов',
             email: 'student@example.com',
             status: 'confirmed',
-            enrolledAt: '2026-10-04T02:00:00.000Z',
+            enrolled_at: '2026-10-04T02:00:00.000Z',
           },
         ],
       },
@@ -686,7 +740,7 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
         type: 'object',
         properties: {
           instructor: { type: 'object' },
-          totalStudents: { type: 'integer', example: 8 },
+          total_students: { type: 'integer', example: 8 },
           enrollments: { type: 'array', items: { type: 'object' } },
         },
       },
@@ -694,13 +748,13 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
     example: {
       success: true,
       data: {
-        totalStudents: 2,
+        total_students: 2,
         enrollments: [
           {
-            enrollmentId: 'enr-1',
-            studentName: 'Иван Иванов',
-            studentEmail: 'student@example.com',
-            courseTitle: 'Golang Architecture',
+            enrollment_id: 'enr-1',
+            student_name: 'Иван Иванов',
+            student_email: 'student@example.com',
+            course_title: 'Golang Architecture',
             status: 'confirmed',
           },
         ],
@@ -845,11 +899,11 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       data: {
         type: 'object',
         properties: {
-          paymentId: { type: 'string', example: 'pay-1234' },
-          transactionRef: { type: 'string', example: 'tx_a8f9c1b2e3d4' },
+          payment_id: { type: 'string', example: 'pay-1234' },
+          transaction_ref: { type: 'string', example: 'tx_a8f9c1b2e3d4' },
           amount: { type: 'number', example: 45000 },
           status: { type: 'string', example: 'succeeded' },
-          paidAt: { type: 'string', example: '2026-10-04T04:10:00.000Z' },
+          paid_at: { type: 'string', example: '2026-10-04T04:10:00.000Z' },
           course: {
             type: 'object',
             properties: {
@@ -864,15 +918,15 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       success: true,
       message: 'Оплата успешно завершена! Доступ к курсу активирован.',
       data: {
-        paymentId: 'pay-1234',
-        transactionRef: 'tx_a8f9c1b2e3d4',
+        payment_id: 'pay-1234',
+        transaction_ref: 'tx_a8f9c1b2e3d4',
         amount: 45000,
         status: 'succeeded',
-        paidAt: '2026-10-04T04:10:00.000Z',
+        paid_at: '2026-10-04T04:10:00.000Z',
         course: {
           id: 'course-1',
           title: 'Golang Microservices',
-          startDate: '2026-11-01T10:00:00.000Z',
+          start_date: '2026-11-01T10:00:00.000Z',
         },
       },
     },
@@ -941,40 +995,40 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
       status: { type: 'string', example: 'UP' },
       timestamp: { type: 'string', example: '2026-10-04T04:20:00.000Z' },
       database: { type: 'string', example: 'connected' },
-      uptimeSeconds: { type: 'integer', example: 3600 },
+      uptime_seconds: { type: 'integer', example: 3600 },
     },
     example: {
       status: 'UP',
       timestamp: '2026-10-04T04:20:00.000Z',
       database: 'connected',
-      uptimeSeconds: 3600,
+      uptime_seconds: 3600,
     },
   },
 
   MetricsResponse: {
     type: 'object',
     properties: {
-      uptimeSeconds: { type: 'integer', example: 3600 },
-      totalRequestsServed: { type: 'integer', example: 254 },
-      memoryUsage: {
+      uptime_seconds: { type: 'integer', example: 3600 },
+      total_requests_served: { type: 'integer', example: 254 },
+      memory_usage: {
         type: 'object',
         properties: {
-          rssMB: { type: 'string', example: '85.40' },
-          heapTotalMB: { type: 'string', example: '42.10' },
-          heapUsedMB: { type: 'string', example: '31.25' },
+          rss_mb: { type: 'string', example: '85.40' },
+          heap_total_mb: { type: 'string', example: '42.10' },
+          heap_used_mb: { type: 'string', example: '31.25' },
         },
       },
-      nodeVersion: { type: 'string', example: 'v20.12.0' },
+      node_version: { type: 'string', example: 'v20.12.0' },
       platform: { type: 'string', example: 'linux' },
-      recentAuditLogs: { type: 'array', items: { type: 'object' } },
+      recent_audit_logs: { type: 'array', items: { type: 'object' } },
     },
     example: {
-      uptimeSeconds: 3600,
-      totalRequestsServed: 254,
-      memoryUsage: { rssMB: '85.40', heapTotalMB: '42.10', heapUsedMB: '31.25' },
-      nodeVersion: 'v20.12.0',
+      uptime_seconds: 3600,
+      total_requests_served: 254,
+      memory_usage: { rss_mb: '85.40', heap_total_mb: '42.10', heap_used_mb: '31.25' },
+      node_version: 'v20.12.0',
       platform: 'linux',
-      recentAuditLogs: [],
+      recent_audit_logs: [],
     },
   },
 

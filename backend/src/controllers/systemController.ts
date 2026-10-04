@@ -24,7 +24,7 @@ export class SystemController {
         status: 'UP',
         timestamp: new Date().toISOString(),
         database: 'connected',
-        uptimeSeconds: Math.floor(process.uptime()),
+        uptime_seconds: Math.floor(process.uptime()),
       });
     } catch (err: any) {
       res.status(503).json({
@@ -50,16 +50,16 @@ export class SystemController {
     const memory = process.memoryUsage();
 
     res.status(200).json({
-      uptimeSeconds: Math.floor(process.uptime()),
-      totalRequestsServed: requestCounter,
-      memoryUsage: {
-        rssMB: (memory.rss / (1024 * 1024)).toFixed(2),
-        heapTotalMB: (memory.heapTotal / (1024 * 1024)).toFixed(2),
-        heapUsedMB: (memory.heapUsed / (1024 * 1024)).toFixed(2),
+      uptime_seconds: Math.floor(process.uptime()),
+      total_requests_served: requestCounter,
+      memory_usage: {
+        rss_mb: (memory.rss / (1024 * 1024)).toFixed(2),
+        heap_total_mb: (memory.heapTotal / (1024 * 1024)).toFixed(2),
+        heap_used_mb: (memory.heapUsed / (1024 * 1024)).toFixed(2),
       },
-      nodeVersion: process.version,
+      node_version: process.version,
       platform: process.platform,
-      recentAuditLogs: logger.getAuditLogs().slice(0, 10),
+      recent_audit_logs: logger.getAuditLogs().slice(0, 10),
     });
   }
 }

@@ -92,12 +92,43 @@ export async function seedDatabase(): Promise<void> {
       },
     });
 
+    const [managerRole] = await Role.findOrCreate({
+      where: { name: 'manager' },
+      defaults: {
+        name: 'manager',
+        description: 'Менеджер образовательных программ и модерации курсов',
+      },
+    });
+
     // 3. Assign Permissions to Roles (Dynamic RBAC)
     // Admin gets ALL permissions (including users:view_all and payments:view_all)
     for (const perm of permissionMap.values()) {
       await RolePermission.findOrCreate({
         where: { role_id: adminRole.id, permission_id: perm.id },
       });
+    }
+
+    // Manager permissions
+    const managerSlugs = [
+      'courses:view_all',
+      'courses:create',
+      'courses:edit',
+      'courses:view_students',
+      'instructors:manage',
+      'instructors:view_students',
+      'enrollments:view_instructor',
+      'enrollments:cancel',
+      'permissions:view',
+      'users:view_all',
+      'cards:manage',
+    ];
+    for (const slug of managerSlugs) {
+      const perm = permissionMap.get(slug);
+      if (perm) {
+        await RolePermission.findOrCreate({
+          where: { role_id: managerRole.id, permission_id: perm.id },
+        });
+      }
     }
 
     // Instructor permissions
@@ -206,6 +237,18 @@ export async function seedDatabase(): Promise<void> {
         email: 'mikhail.morozov@course-platform.local',
         password_hash: studentPasswordHash,
         full_name: 'Михаил Морозов',
+      },
+    });
+
+    // Manager: Мария Менеджерова
+    const managerPasswordHash = await AuthService.hashPassword('ManagerPassword123!');
+    const [managerUser] = await User.findOrCreate({
+      where: { email: 'manager@course-platform.local' },
+      defaults: {
+        role_id: managerRole.id,
+        email: 'manager@course-platform.local',
+        password_hash: managerPasswordHash,
+        full_name: 'Мария Менеджерова',
       },
     });
 

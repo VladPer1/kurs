@@ -1,6 +1,6 @@
 export interface AuditLogEntry {
   timestamp: string;
-  eventType: 'AUTH_FAILED' | 'ACCOUNT_LOCKED' | 'ACCESS_DENIED' | 'AUTH_SUCCESS' | 'PASSWORD_BRUTE_FORCE_ATTEMPT';
+  event_type: 'AUTH_FAILED' | 'ACCOUNT_LOCKED' | 'ACCESS_DENIED' | 'AUTH_SUCCESS' | 'PASSWORD_BRUTE_FORCE_ATTEMPT';
   email?: string;
   ip: string;
   endpoint: string;
@@ -20,16 +20,27 @@ export const logger = {
   error: (message: string, meta?: any) => {
     console.error(`[ERROR] ${new Date().toISOString()} - ${message}`, meta ? JSON.stringify(meta) : '');
   },
-  audit: (entry: Omit<AuditLogEntry, 'timestamp'>) => {
+  audit: (entry: {
+    event_type?: any;
+    eventType?: any;
+    email?: string;
+    ip: string;
+    endpoint: string;
+    details: string;
+  }) => {
     const fullEntry: AuditLogEntry = {
-      ...entry,
+      event_type: entry.event_type || entry.eventType,
+      email: entry.email,
+      ip: entry.ip,
+      endpoint: entry.endpoint,
+      details: entry.details,
       timestamp: new Date().toISOString(),
     };
     auditMemoryLogs.unshift(fullEntry);
     if (auditMemoryLogs.length > MAX_LOGS) {
       auditMemoryLogs.pop();
     }
-    console.warn(`[AUDIT_SECURITY] [${fullEntry.eventType}] IP: ${fullEntry.ip} - User: ${fullEntry.email || 'anonymous'} - Path: ${fullEntry.endpoint} - ${fullEntry.details}`);
+    console.warn(`[AUDIT_SECURITY] [${fullEntry.event_type}] IP: ${fullEntry.ip} - User: ${fullEntry.email || 'anonymous'} - Path: ${fullEntry.endpoint} - ${fullEntry.details}`);
   },
   getAuditLogs: () => [...auditMemoryLogs],
 };

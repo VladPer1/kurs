@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 
+export const ALLOWED_REGISTRATION_ROLES = ['student', 'instructor', 'manager'] as const;
+
 export function validateRegister(req: Request, res: Response, next: NextFunction): void {
-  const { email, password, full_name } = req.body;
+  const { email, password, full_name, role } = req.body;
   const errors: string[] = [];
 
   if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -14,6 +16,12 @@ export function validateRegister(req: Request, res: Response, next: NextFunction
 
   if (!full_name || typeof full_name !== 'string' || full_name.trim().length < 2) {
     errors.push('Имя (full_name) должно содержать как минимум 2 символа.');
+  }
+
+  if (!role || typeof role !== 'string') {
+    errors.push(`Поле role обязательно для заполнения. Доступные роли: ${ALLOWED_REGISTRATION_ROLES.join(', ')}.`);
+  } else if (!ALLOWED_REGISTRATION_ROLES.includes(role.trim().toLowerCase() as any)) {
+    errors.push(`Недопустимая роль '${role}'. Допустимые роли: ${ALLOWED_REGISTRATION_ROLES.join(', ')}.`);
   }
 
   if (errors.length > 0) {
@@ -31,6 +39,7 @@ export function validateRegister(req: Request, res: Response, next: NextFunction
   // Sanitize
   req.body.email = email.trim().toLowerCase();
   req.body.full_name = full_name.trim();
+  req.body.role = role.trim().toLowerCase();
   next();
 }
 
@@ -87,13 +96,31 @@ export function validateCourseCreate(req: Request, res: Response, next: NextFunc
   next();
 }
 
+function checkLuhn(cardNumber: string): boolean {
+  let sum = 0;
+  let alternate = false;
+  for (let i = cardNumber.length - 1; i >= 0; i--) {
+    let n = parseInt(cardNumber.charAt(i), 10);
+    if (alternate) {
+      n *= 2;
+      if (n > 9) n = (n % 10) + 1;
+    }
+    sum += n;
+    alternate = !alternate;
+  }
+  return sum % 10 === 0;
+}
+
 export function validateCardAdd(req: Request, res: Response, next: NextFunction): void {
-  const { card_number, card_holder, exp_month, exp_year, cvv } = req.body;
+  const { card_number, cleanCardNumber: aliasCardNumber, card_holder, exp_month, exp_year, cvv, cleanCvv: aliasCvv } = req.body;
   const errors: string[] = [];
 
-  const cleanCardNumber = card_number ? String(card_number).replace(/[\s-]/g, '') : '';
+  const rawCardNumber = card_number || aliasCardNumber;
+  const cleanCardNumber = rawCardNumber ? String(rawCardNumber).replace(/[\s-]/g, '') : '';
   if (!cleanCardNumber || !/^\d{16}$/.test(cleanCardNumber)) {
     errors.push('Номер карты должен содержать ровно 16 цифр.');
+  } else if (!checkLuhn(cleanCardNumber)) {
+    errors.push('Номер карты не прошел проверку контрольной суммы алгоритма Луна.');
   }
 
   if (!card_holder || typeof card_holder !== 'string' || card_holder.trim().length < 2) {
@@ -111,7 +138,8 @@ export function validateCardAdd(req: Request, res: Response, next: NextFunction)
     errors.push(`Год окончания (exp_year) должен быть не ранее ${currentYear}.`);
   }
 
-  const cleanCvv = cvv ? String(cvv).trim() : '';
+  const rawCvv = cvv || aliasCvv;
+  const cleanCvv = rawCvv ? String(rawCvv).trim() : '';
   if (!cleanCvv || !/^\d{3,4}$/.test(cleanCvv)) {
     errors.push('Код CVV должен содержать 3 или 4 цифры.');
   }
@@ -128,10 +156,12 @@ export function validateCardAdd(req: Request, res: Response, next: NextFunction)
     return;
   }
 
+  req.body.card_number = cleanCardNumber;
   req.body.cleanCardNumber = cleanCardNumber;
   req.body.card_holder = card_holder.trim().toUpperCase();
   req.body.exp_month = month;
   req.body.exp_year = year;
+  req.body.cvv = cleanCvv;
   req.body.cleanCvv = cleanCvv;
   next();
 }

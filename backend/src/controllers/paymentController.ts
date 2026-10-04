@@ -18,7 +18,8 @@ export class PaymentController {
   // @Router       /payments/checkout [post]
   static async checkout(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.userId;
-    const { enrollment_id, payment_method_id } = req.body;
+    const enrollment_id = req.body.enrollment_id || req.body.enrollmentId;
+    const payment_method_id = req.body.payment_method_id || req.body.paymentMethodId;
 
     if (!enrollment_id) {
       res.status(400).json({
@@ -108,15 +109,15 @@ export class PaymentController {
         success: true,
         message: 'Оплата успешно завершена! Доступ к курсу активирован.',
         data: {
-          paymentId: payment.id,
-          transactionRef: payment.transaction_ref,
+          payment_id: payment.id,
+          transaction_ref: payment.transaction_ref,
           amount: payment.amount,
           status: payment.status,
-          paidAt: payment.paid_at,
+          paid_at: payment.paid_at,
           course: {
             id: enrollment.course.id,
             title: enrollment.course.title,
-            startDate: enrollment.course.start_date,
+            start_date: enrollment.course.start_date,
           },
         },
       });

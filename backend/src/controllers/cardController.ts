@@ -47,7 +47,7 @@ export class CardController {
 
     // Encrypt card number and CVV using AES-256-GCM (OWASP Requirement 14)
     const sensitivePayload = JSON.stringify({
-      cardNumber: cleanCardNumber,
+      card_number: cleanCardNumber,
       cvv: cleanCvv,
     });
     const encrypted_payload = encryptAES256GCM(sensitivePayload);

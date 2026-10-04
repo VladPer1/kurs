@@ -333,7 +333,7 @@ export class RoleController {
       success: true,
       message: `Пользователю успешно назначена роль ${targetRole.name}.`,
       data: {
-        userId: user.id,
+        user_id: user.id,
         email: user.email,
         role: targetRole.name,
       },

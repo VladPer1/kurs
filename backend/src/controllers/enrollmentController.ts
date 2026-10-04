@@ -16,7 +16,7 @@ export class EnrollmentController {
   // @Failure      400      {object}  models.ErrorResponse
   // @Router       /enrollments [post]
   static async create(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const { course_id } = req.body;
+    const course_id = req.body.course_id || req.body.courseId;
     const userId = req.user?.userId;
 
     if (!course_id) {
@@ -59,7 +59,7 @@ export class EnrollmentController {
         error: {
           code: 'ALREADY_ENROLLED',
           message: `Вы уже записаны на данный курс (статус: ${existing.status}).`,
-          enrollmentId: existing.id,
+          enrollment_id: existing.id,
         },
       });
       return;

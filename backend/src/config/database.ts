@@ -30,6 +30,9 @@ if (ENV.DATABASE_URL && ENV.DATABASE_URL.startsWith('postgres')) {
     dialectModule: sqliteDialectModule,
     storage: storagePath,
     logging: false,
+    define: {
+      underscored: true,
+    },
   });
 }
 

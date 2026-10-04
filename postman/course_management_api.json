@@ -52,8 +52,8 @@
                   "    pm.response.to.have.status(201);",
                   "});",
                   "var jsonData = pm.response.json();",
-                  "if (jsonData.data && jsonData.data.accessToken) {",
-                  "    pm.collectionVariables.set(\"studentAccessToken\", jsonData.data.accessToken);",
+                  "if (jsonData.data && (jsonData.data.access_token || jsonData.data.accessToken)) {",
+                  "    pm.collectionVariables.set(\"studentAccessToken\", jsonData.data.access_token || jsonData.data.accessToken);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -65,7 +65,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"test_student_{{$timestamp}}@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Петр Тестовый\"\n}"
+              "raw": "{\n  \"email\": \"test_student_{{$timestamp}}@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Петр Тестовый\",\n  \"role\": \"student\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
           }

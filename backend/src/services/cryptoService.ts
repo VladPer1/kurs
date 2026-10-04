@@ -42,8 +42,11 @@ export function decryptAES256GCM(encryptedData: string): string {
   const decipher = crypto.createDecipheriv('aes-256-gcm', getEncryptionKey(), iv);
   decipher.setAuthTag(tag);
 
-  let decrypted = decipher.update(ciphertextHex, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-
-  return decrypted;
+  try {
+    let decrypted = decipher.update(ciphertextHex, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (err: any) {
+    throw new Error(`Decryption failed or data integrity compromised: ${err.message}`);
+  }
 }

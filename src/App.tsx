@@ -99,8 +99,9 @@ export default function App() {
       const data = await res.json();
       setResponseStatus(res.status);
       setApiResponse(data);
-      if (res.ok && data.data?.accessToken) {
-        setAccessToken(data.data.accessToken);
+      const token = data.data?.access_token || data.data?.accessToken;
+      if (res.ok && token) {
+        setAccessToken(token);
         setCurrentUser(data.data.user);
       }
     } catch (err: any) {
@@ -853,7 +854,7 @@ export default function App() {
                         body: JSON.stringify({ email: 'student@course-platform.local', password: 'StudentPassword123!' }),
                       });
                       const lData = await lRes.json();
-                      token = lData.data?.accessToken;
+                      token = lData.data?.access_token || lData.data?.accessToken;
                       setAccessToken(token);
                       setCurrentUser(lData.data?.user);
                     }

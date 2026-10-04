@@ -9,6 +9,7 @@
     "build": "vite build",
     "swag:init": "tsx scripts/generateDocs.ts",
     "docs:generate": "tsx scripts/generateDocs.ts",
+    "test": "tsx --test backend/tests/*.test.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"

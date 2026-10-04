@@ -1,23 +1,23 @@
 import { Request, Response } from 'express';
-import { User, Role } from '../models/index.js';
+import { User, Role, Instructor } from '../models/index.js';
 import { AuthService } from '../services/authService.js';
 import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { ENV } from '../config/env.js';
 
 export class AuthController {
   // Register Godoc
-  // @Summary      Регистрация нового студента
-  // @Description  Регистрирует нового пользователя с базовой ролью student и хеширует пароль bcrypt
+  // @Summary      Регистрация нового пользователя
+  // @Description  Регистрирует нового пользователя с обязательной ролью (student, instructor, manager) и хеширует пароль bcrypt
   // @Tags         auth
   // @Accept       json
   // @Produce      json
-  // @Param        request  body      models.RegisterRequest  true  "Данные регистрации"
+  // @Param        request  body      models.RegisterRequest  true  "Данные регистрации с обязательной ролью"
   // @Success      201      {object}  models.AuthResponse
   // @Failure      400      {object}  models.ErrorResponse
   // @Failure      409      {object}  models.ErrorResponse
   // @Router       /auth/register [post]
   static async register(req: Request, res: Response): Promise<void> {
-    const { email, password, full_name } = req.body;
+    const { email, password, full_name, role } = req.body;
 
     const existing = await User.findOne({ where: { email } });
     if (existing) {
@@ -31,13 +31,14 @@ export class AuthController {
       return;
     }
 
-    const studentRole = await Role.findOne({ where: { name: 'student' } });
-    if (!studentRole) {
-      res.status(500).json({
+    const normalizedRole = (role || 'student').toLowerCase().trim();
+    const targetRole = await Role.findOne({ where: { name: normalizedRole } });
+    if (!targetRole) {
+      res.status(400).json({
         success: false,
         error: {
-          code: 'CONFIG_ERROR',
-          message: 'Базовая роль student не найдена в системе.',
+          code: 'ROLE_NOT_FOUND',
+          message: `Роль '${normalizedRole}' не найдена в системе. Доступные роли: student, instructor, manager.`,
         },
       });
       return;
@@ -45,11 +46,23 @@ export class AuthController {
 
     const password_hash = await AuthService.hashPassword(password);
     const user = await User.create({
-      role_id: studentRole.id,
+      role_id: targetRole.id,
       email,
       password_hash,
       full_name,
     });
+
+    if (targetRole.name === 'instructor') {
+      await Instructor.findOrCreate({
+        where: { user_id: user.id },
+        defaults: {
+          user_id: user.id,
+          bio: 'Преподаватель учебной платформы',
+          specialization: 'Общие курсы',
+          rating: 5.0,
+        },
+      });
+    }
 
     const userWithPerms = await AuthService.getUserWithPermissions(user.id);
     const permissions = userWithPerms ? userWithPerms.permissions : [];
@@ -57,7 +70,7 @@ export class AuthController {
     const accessToken = AuthService.generateAccessToken({
       userId: user.id,
       email: user.email,
-      role: 'student',
+      role: targetRole.name,
       permissions,
     });
 
@@ -65,6 +78,12 @@ export class AuthController {
     await user.update({ refresh_token: refreshToken });
 
     // Set refresh token in httpOnly secure cookie
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: ENV.NODE_ENV === 'production',
@@ -76,15 +95,15 @@ export class AuthController {
       success: true,
       message: 'Регистрация успешно завершена.',
       data: {
-        accessToken,
+        access_token: accessToken,
         user: {
           id: user.id,
           email: user.email,
           full_name: user.full_name,
           role: {
-            id: studentRole?.id || '',
-            name: studentRole?.name || 'student',
-            description: studentRole?.description || 'Студент / Слушатель',
+            id: targetRole.id,
+            name: targetRole.name,
+            description: targetRole.description,
             permissions,
           },
         },
@@ -129,7 +148,7 @@ export class AuthController {
         error: {
           code: 'ACCOUNT_LOCKED',
           message: `Учетная запись заблокирована из-за 5 неверных попыток ввода пароля. Попробуйте снова через ${minutesRemaining} минут.`,
-          lockUntil: user.lock_until,
+          lock_until: user.lock_until,
         },
       });
       return;
@@ -144,7 +163,7 @@ export class AuthController {
           error: {
             code: 'ACCOUNT_LOCKED',
             message: `Превышен лимит 5 попыток. Аккаунт заблокирован на 15 минут.`,
-            lockUntil: user.lock_until,
+            lock_until: user.lock_until,
           },
         });
         return;
@@ -155,7 +174,7 @@ export class AuthController {
         error: {
           code: 'INVALID_CREDENTIALS',
           message: `Неверный пароль. Осталось попыток: ${attemptsLeft}`,
-          attemptsLeft,
+          attempts_left: attemptsLeft,
         },
       });
       return;
@@ -177,7 +196,7 @@ export class AuthController {
     await AuthService.handleSuccessfulLogin(user, refreshToken, ip);
 
     // Set refresh token in httpOnly secure cookie
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       secure: ENV.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -188,7 +207,7 @@ export class AuthController {
       success: true,
       message: 'Успешная авторизация.',
       data: {
-        accessToken,
+        access_token: accessToken,
         user: {
           id: user.id,
           email: user.email,
@@ -209,7 +228,7 @@ export class AuthController {
   // @Failure      401  {object}  models.ErrorResponse
   // @Router       /auth/refresh [post]
   static async refresh(req: Request, res: Response): Promise<void> {
-    const token = req.cookies?.refreshToken || req.body?.refreshToken;
+    const token = req.cookies?.refresh_token || req.cookies?.refreshToken || req.body?.refresh_token || req.body?.refreshToken;
 
     if (!token) {
       res.status(401).json({
@@ -251,7 +270,7 @@ export class AuthController {
       const newRefreshToken = AuthService.generateRefreshToken({ userId: user.id });
       await user.update({ refresh_token: newRefreshToken });
 
-      res.cookie('refreshToken', newRefreshToken, {
+      res.cookie('refresh_token', newRefreshToken, {
         httpOnly: true,
         secure: ENV.NODE_ENV === 'production',
         sameSite: 'strict',
@@ -261,7 +280,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         data: {
-          accessToken: newAccessToken,
+          access_token: newAccessToken,
         },
       });
     } catch (err: any) {
@@ -289,6 +308,11 @@ export class AuthController {
       await User.update({ refresh_token: null }, { where: { id: req.user.userId } });
     }
 
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: ENV.NODE_ENV === 'production',
