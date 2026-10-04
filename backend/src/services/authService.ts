@@ -64,6 +64,12 @@ export class AuthService {
    */
   static async getUserWithPermissions(userId: string): Promise<{
     user: User;
+    role: {
+      id: string;
+      name: string;
+      description?: string;
+      permissions: string[];
+    };
     roleName: string;
     permissions: string[];
   } | null> {
@@ -76,7 +82,7 @@ export class AuthService {
             {
               model: Permission,
               as: 'permissions',
-              attributes: ['slug'],
+              attributes: ['id', 'slug', 'description'],
               through: { attributes: [] },
             },
           ],
@@ -86,12 +92,23 @@ export class AuthService {
 
     if (!user) return null;
 
-    const roleName = (user as any).role ? (user as any).role.name : 'student';
-    const permissions: string[] = (user as any).role?.permissions
-      ? (user as any).role.permissions.map((p: any) => p.slug)
+    const userRole = (user as any).role;
+    const roleName = userRole ? userRole.name : 'student';
+    const permissions: string[] = userRole?.permissions
+      ? userRole.permissions.map((p: any) => p.slug)
       : [];
 
-    return { user, roleName, permissions };
+    return {
+      user,
+      role: {
+        id: userRole?.id || '',
+        name: roleName,
+        description: userRole?.description || '',
+        permissions,
+      },
+      roleName,
+      permissions,
+    };
   }
 
   /**

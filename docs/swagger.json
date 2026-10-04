@@ -457,19 +457,34 @@
                     "example": "Администратор Системы"
                   },
                   "role": {
-                    "type": "string",
-                    "example": "admin"
-                  },
-                  "permissions": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "example": [
-                      "users:view_all",
-                      "courses:create",
-                      "roles:manage"
-                    ]
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "role-uuid-admin"
+                      },
+                      "name": {
+                        "type": "string",
+                        "example": "admin"
+                      },
+                      "description": {
+                        "type": "string",
+                        "example": "Полный администратор платформы"
+                      },
+                      "permissions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "users:view_all",
+                          "users:manage_roles",
+                          "roles:manage",
+                          "courses:create",
+                          "payments:view_all"
+                        ]
+                      }
+                    }
                   }
                 }
               }
@@ -485,7 +500,88 @@
               "id": "usr-uuid-1",
               "email": "admin@course-platform.local",
               "full_name": "Администратор Системы",
-              "role": "admin",
+              "role": {
+                "id": "role-uuid-admin",
+                "name": "admin",
+                "description": "Полный администратор платформы",
+                "permissions": [
+                  "users:view_all",
+                  "users:manage_roles",
+                  "roles:manage",
+                  "courses:create",
+                  "payments:view_all"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "CurrentUserResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "example": "usr-uuid-1"
+              },
+              "email": {
+                "type": "string",
+                "example": "admin@course-platform.local"
+              },
+              "full_name": {
+                "type": "string",
+                "example": "Администратор Системы"
+              },
+              "role": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "role-uuid-admin"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "admin"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Полный администратор платформы"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "users:view_all",
+                      "roles:manage"
+                    ]
+                  }
+                }
+              },
+              "created_at": {
+                "type": "string",
+                "example": "2026-10-04T00:00:00.000Z"
+              }
+            }
+          }
+        },
+        "example": {
+          "success": true,
+          "data": {
+            "id": "usr-uuid-1",
+            "email": "admin@course-platform.local",
+            "full_name": "Администратор Системы",
+            "role": {
+              "id": "role-uuid-admin",
+              "name": "admin",
+              "description": "Полный администратор платформы",
               "permissions": [
                 "users:view_all",
                 "users:manage_roles",
@@ -493,7 +589,8 @@
                 "courses:create",
                 "payments:view_all"
               ]
-            }
+            },
+            "created_at": "2026-10-04T00:00:00.000Z"
           }
         }
       },
@@ -533,6 +630,17 @@
                   "description": {
                     "type": "string",
                     "example": "Слушатель курсов"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "courses:view",
+                      "enrollments:create",
+                      "enrollments:view_my"
+                    ]
                   }
                 }
               },
@@ -561,7 +669,12 @@
             "role": {
               "id": "role-uuid-student",
               "name": "student",
-              "description": "Слушатель курсов"
+              "description": "Слушатель курсов",
+              "permissions": [
+                "courses:view",
+                "enrollments:create",
+                "enrollments:view_my"
+              ]
             },
             "enrollments": [
               {
@@ -1623,14 +1736,18 @@
                       "id": "usr-uuid-1",
                       "email": "admin@course-platform.local",
                       "full_name": "Администратор Системы",
-                      "role": "admin",
-                      "permissions": [
-                        "users:view_all",
-                        "users:manage_roles",
-                        "roles:manage",
-                        "courses:create",
-                        "payments:view_all"
-                      ]
+                      "role": {
+                        "id": "role-uuid-admin",
+                        "name": "admin",
+                        "description": "Полный администратор платформы",
+                        "permissions": [
+                          "users:view_all",
+                          "users:manage_roles",
+                          "roles:manage",
+                          "courses:create",
+                          "payments:view_all"
+                        ]
+                      }
                     }
                   }
                 }
@@ -1716,14 +1833,18 @@
                       "id": "usr-uuid-1",
                       "email": "admin@course-platform.local",
                       "full_name": "Администратор Системы",
-                      "role": "admin",
-                      "permissions": [
-                        "users:view_all",
-                        "users:manage_roles",
-                        "roles:manage",
-                        "courses:create",
-                        "payments:view_all"
-                      ]
+                      "role": {
+                        "id": "role-uuid-admin",
+                        "name": "admin",
+                        "description": "Полный администратор платформы",
+                        "permissions": [
+                          "users:view_all",
+                          "users:manage_roles",
+                          "roles:manage",
+                          "courses:create",
+                          "payments:view_all"
+                        ]
+                      }
                     }
                   }
                 }
@@ -1866,7 +1987,28 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/CurrentUserResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "usr-uuid-1",
+                    "email": "admin@course-platform.local",
+                    "full_name": "Администратор Системы",
+                    "role": {
+                      "id": "role-uuid-admin",
+                      "name": "admin",
+                      "description": "Полный администратор платформы",
+                      "permissions": [
+                        "users:view_all",
+                        "users:manage_roles",
+                        "roles:manage",
+                        "courses:create",
+                        "payments:view_all"
+                      ]
+                    },
+                    "created_at": "2026-10-04T00:00:00.000Z"
+                  }
                 }
               }
             }
@@ -4167,7 +4309,12 @@
                     "role": {
                       "id": "role-uuid-student",
                       "name": "student",
-                      "description": "Слушатель курсов"
+                      "description": "Слушатель курсов",
+                      "permissions": [
+                        "courses:view",
+                        "enrollments:create",
+                        "enrollments:view_my"
+                      ]
                     },
                     "enrollments": [
                       {

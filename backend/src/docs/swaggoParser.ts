@@ -231,11 +231,24 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
               id: { type: 'string', example: 'usr-uuid-1' },
               email: { type: 'string', example: 'admin@course-platform.local' },
               full_name: { type: 'string', example: 'Администратор Системы' },
-              role: { type: 'string', example: 'admin' },
-              permissions: {
-                type: 'array',
-                items: { type: 'string' },
-                example: ['users:view_all', 'courses:create', 'roles:manage'],
+              role: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', example: 'role-uuid-admin' },
+                  name: { type: 'string', example: 'admin' },
+                  description: { type: 'string', example: 'Полный администратор платформы' },
+                  permissions: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [
+                      'users:view_all',
+                      'users:manage_roles',
+                      'roles:manage',
+                      'courses:create',
+                      'payments:view_all',
+                    ],
+                  },
+                },
               },
             },
           },
@@ -251,9 +264,69 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
           id: 'usr-uuid-1',
           email: 'admin@course-platform.local',
           full_name: 'Администратор Системы',
-          role: 'admin',
-          permissions: ['users:view_all', 'users:manage_roles', 'roles:manage', 'courses:create', 'payments:view_all'],
+          role: {
+            id: 'role-uuid-admin',
+            name: 'admin',
+            description: 'Полный администратор платформы',
+            permissions: [
+              'users:view_all',
+              'users:manage_roles',
+              'roles:manage',
+              'courses:create',
+              'payments:view_all',
+            ],
+          },
         },
+      },
+    },
+  },
+
+  CurrentUserResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      data: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'usr-uuid-1' },
+          email: { type: 'string', example: 'admin@course-platform.local' },
+          full_name: { type: 'string', example: 'Администратор Системы' },
+          role: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', example: 'role-uuid-admin' },
+              name: { type: 'string', example: 'admin' },
+              description: { type: 'string', example: 'Полный администратор платформы' },
+              permissions: {
+                type: 'array',
+                items: { type: 'string' },
+                example: ['users:view_all', 'roles:manage'],
+              },
+            },
+          },
+          created_at: { type: 'string', example: '2026-10-04T00:00:00.000Z' },
+        },
+      },
+    },
+    example: {
+      success: true,
+      data: {
+        id: 'usr-uuid-1',
+        email: 'admin@course-platform.local',
+        full_name: 'Администратор Системы',
+        role: {
+          id: 'role-uuid-admin',
+          name: 'admin',
+          description: 'Полный администратор платформы',
+          permissions: [
+            'users:view_all',
+            'users:manage_roles',
+            'roles:manage',
+            'courses:create',
+            'payments:view_all',
+          ],
+        },
+        created_at: '2026-10-04T00:00:00.000Z',
       },
     },
   },
@@ -274,6 +347,11 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
               id: { type: 'string', example: 'role-uuid-student' },
               name: { type: 'string', example: 'student' },
               description: { type: 'string', example: 'Слушатель курсов' },
+              permissions: {
+                type: 'array',
+                items: { type: 'string' },
+                example: ['courses:view', 'enrollments:create', 'enrollments:view_my'],
+              },
             },
           },
           courses: {
@@ -294,6 +372,7 @@ export const SWAGGER_SCHEMAS: Record<string, any> = {
           id: 'role-uuid-student',
           name: 'student',
           description: 'Слушатель курсов',
+          permissions: ['courses:view', 'enrollments:create', 'enrollments:view_my'],
         },
         enrollments: [
           {

@@ -23,12 +23,19 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+interface AuthRoleData {
+  id?: string;
+  name: string;
+  description?: string;
+  permissions?: string[];
+}
+
 interface AuthUserData {
   id: string;
   email: string;
   full_name: string;
-  role: string;
-  permissions: string[];
+  role: string | AuthRoleData;
+  permissions?: string[];
 }
 
 export default function App() {
@@ -486,7 +493,7 @@ export default function App() {
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Текущая сессия API</span>
                   {currentUser ? (
                     <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      Роль: {currentUser.role}
+                      Роль: {typeof currentUser.role === 'object' ? currentUser.role.name : currentUser.role}
                     </span>
                   ) : (
                     <span className="px-2 py-0.5 rounded text-xs font-semibold bg-slate-800 text-slate-400">
@@ -502,9 +509,9 @@ export default function App() {
                       <span className="font-medium text-slate-200">{currentUser.full_name} ({currentUser.email})</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block mb-1">Активные Permissions (динамический RBAC):</span>
+                      <span className="text-slate-400 block mb-1">Активные Permissions роли (RBAC):</span>
                       <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-1">
-                        {currentUser.permissions.map((p) => (
+                        {((typeof currentUser.role === 'object' && currentUser.role.permissions) || currentUser.permissions || []).map((p) => (
                           <span key={p} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
                             {p}
                           </span>

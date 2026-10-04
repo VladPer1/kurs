@@ -329,16 +329,27 @@ components:
                   type: "string"
                   example: "Администратор Системы"
                 role:
-                  type: "string"
-                  example: "admin"
-                permissions:
-                  type: "array"
-                  items:
-                    type: "string"
-                  example:
-                    - "users:view_all"
-                    - "courses:create"
-                    - "roles:manage"
+                  type: "object"
+                  properties:
+                    id:
+                      type: "string"
+                      example: "role-uuid-admin"
+                    name:
+                      type: "string"
+                      example: "admin"
+                    description:
+                      type: "string"
+                      example: "Полный администратор платформы"
+                    permissions:
+                      type: "array"
+                      items:
+                        type: "string"
+                      example:
+                        - "users:view_all"
+                        - "users:manage_roles"
+                        - "roles:manage"
+                        - "courses:create"
+                        - "payments:view_all"
       example:
         success: true
         message: "Аутентификация успешна."
@@ -348,13 +359,73 @@ components:
             id: "usr-uuid-1"
             email: "admin@course-platform.local"
             full_name: "Администратор Системы"
-            role: "admin"
+            role:
+              id: "role-uuid-admin"
+              name: "admin"
+              description: "Полный администратор платформы"
+              permissions:
+                - "users:view_all"
+                - "users:manage_roles"
+                - "roles:manage"
+                - "courses:create"
+                - "payments:view_all"
+    CurrentUserResponse:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+          example: true
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "string"
+              example: "usr-uuid-1"
+            email:
+              type: "string"
+              example: "admin@course-platform.local"
+            full_name:
+              type: "string"
+              example: "Администратор Системы"
+            role:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  example: "role-uuid-admin"
+                name:
+                  type: "string"
+                  example: "admin"
+                description:
+                  type: "string"
+                  example: "Полный администратор платформы"
+                permissions:
+                  type: "array"
+                  items:
+                    type: "string"
+                  example:
+                    - "users:view_all"
+                    - "roles:manage"
+            created_at:
+              type: "string"
+              example: "2026-10-04T00:00:00.000Z"
+      example:
+        success: true
+        data:
+          id: "usr-uuid-1"
+          email: "admin@course-platform.local"
+          full_name: "Администратор Системы"
+          role:
+            id: "role-uuid-admin"
+            name: "admin"
+            description: "Полный администратор платформы"
             permissions:
               - "users:view_all"
               - "users:manage_roles"
               - "roles:manage"
               - "courses:create"
               - "payments:view_all"
+          created_at: "2026-10-04T00:00:00.000Z"
     UserResponse:
       type: "object"
       properties:
@@ -385,6 +456,14 @@ components:
                 description:
                   type: "string"
                   example: "Слушатель курсов"
+                permissions:
+                  type: "array"
+                  items:
+                    type: "string"
+                  example:
+                    - "courses:view"
+                    - "enrollments:create"
+                    - "enrollments:view_my"
             courses:
               type: "array"
               items:
@@ -403,6 +482,10 @@ components:
             id: "role-uuid-student"
             name: "student"
             description: "Слушатель курсов"
+            permissions:
+              - "courses:view"
+              - "enrollments:create"
+              - "enrollments:view_my"
           enrollments:
             - id: "enr-1"
               status: "confirmed"
@@ -1141,13 +1224,16 @@ paths:
                     id: "usr-uuid-1"
                     email: "admin@course-platform.local"
                     full_name: "Администратор Системы"
-                    role: "admin"
-                    permissions:
-                      - "users:view_all"
-                      - "users:manage_roles"
-                      - "roles:manage"
-                      - "courses:create"
-                      - "payments:view_all"
+                    role:
+                      id: "role-uuid-admin"
+                      name: "admin"
+                      description: "Полный администратор платформы"
+                      permissions:
+                        - "users:view_all"
+                        - "users:manage_roles"
+                        - "roles:manage"
+                        - "courses:create"
+                        - "payments:view_all"
         400:
           description: "models.ErrorResponse"
           content:
@@ -1205,13 +1291,16 @@ paths:
                     id: "usr-uuid-1"
                     email: "admin@course-platform.local"
                     full_name: "Администратор Системы"
-                    role: "admin"
-                    permissions:
-                      - "users:view_all"
-                      - "users:manage_roles"
-                      - "roles:manage"
-                      - "courses:create"
-                      - "payments:view_all"
+                    role:
+                      id: "role-uuid-admin"
+                      name: "admin"
+                      description: "Полный администратор платформы"
+                      permissions:
+                        - "users:view_all"
+                        - "users:manage_roles"
+                        - "roles:manage"
+                        - "courses:create"
+                        - "payments:view_all"
         401:
           description: "models.ErrorResponse"
           content:
@@ -1301,7 +1390,24 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
+                $ref: "#/components/schemas/CurrentUserResponse"
+              example:
+                success: true
+                data:
+                  id: "usr-uuid-1"
+                  email: "admin@course-platform.local"
+                  full_name: "Администратор Системы"
+                  role:
+                    id: "role-uuid-admin"
+                    name: "admin"
+                    description: "Полный администратор платформы"
+                    permissions:
+                      - "users:view_all"
+                      - "users:manage_roles"
+                      - "roles:manage"
+                      - "courses:create"
+                      - "payments:view_all"
+                  created_at: "2026-10-04T00:00:00.000Z"
         401:
           description: "models.ErrorResponse"
           content:
@@ -2803,6 +2909,10 @@ paths:
                     id: "role-uuid-student"
                     name: "student"
                     description: "Слушатель курсов"
+                    permissions:
+                      - "courses:view"
+                      - "enrollments:create"
+                      - "enrollments:view_my"
                   enrollments:
                     - id: "enr-1"
                       status: "confirmed"

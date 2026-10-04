@@ -4,7 +4,7 @@ import crypto from 'crypto';
 dotenv.config();
 
 export const ENV = {
-  PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+  PORT: 3000,
   NODE_ENV: process.env.NODE_ENV || 'development',
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || 'course-platform-super-secret-access-token-key-256bit',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'course-platform-super-secret-refresh-token-key-256bit',

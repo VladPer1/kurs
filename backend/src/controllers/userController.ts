@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { User, Role, Course, Enrollment, Instructor } from '../models/index.js';
+import { User, Role, Permission, Course, Enrollment, Instructor } from '../models/index.js';
 import { AuthenticatedRequest } from '../middleware/authJwt.js';
 import { Op } from 'sequelize';
 
@@ -32,6 +32,14 @@ export class UserController {
       model: Role,
       as: 'role',
       attributes: ['id', 'name', 'description'],
+      include: [
+        {
+          model: Permission,
+          as: 'permissions',
+          attributes: ['id', 'slug', 'description'],
+          through: { attributes: [] },
+        },
+      ],
     };
 
     if (role && typeof role === 'string') {
@@ -101,6 +109,7 @@ export class UserController {
           id: u.role?.id,
           name: roleName,
           description: u.role?.description,
+          permissions: (u.role?.permissions || []).map((p: any) => p.slug || p.name),
         },
         security_status: {
           is_locked: isLocked,
@@ -147,6 +156,14 @@ export class UserController {
           model: Role,
           as: 'role',
           attributes: ['id', 'name', 'description'],
+          include: [
+            {
+              model: Permission,
+              as: 'permissions',
+              attributes: ['id', 'slug', 'description'],
+              through: { attributes: [] },
+            },
+          ],
         },
         {
           model: Enrollment,
@@ -206,7 +223,12 @@ export class UserController {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
-        role: user.role,
+        role: {
+          id: user.role?.id,
+          name: user.role?.name || 'student',
+          description: user.role?.description,
+          permissions: (user.role?.permissions || []).map((p: any) => p.slug || p.name),
+        },
         security_status: {
           is_locked: isLocked,
           lock_until: user.lock_until,

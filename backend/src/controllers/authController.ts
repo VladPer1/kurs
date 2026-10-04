@@ -81,8 +81,12 @@ export class AuthController {
           id: user.id,
           email: user.email,
           full_name: user.full_name,
-          role: 'student',
-          permissions,
+          role: {
+            id: studentRole?.id || '',
+            name: studentRole?.name || 'student',
+            description: studentRole?.description || 'Студент / Слушатель',
+            permissions,
+          },
         },
       },
     });
@@ -189,8 +193,7 @@ export class AuthController {
           id: user.id,
           email: user.email,
           full_name: user.full_name,
-          role: roleName,
-          permissions,
+          role: userDetails ? userDetails.role : { name: roleName, permissions },
         },
       },
     });
@@ -332,8 +335,7 @@ export class AuthController {
         id: details.user.id,
         email: details.user.email,
         full_name: details.user.full_name,
-        role: details.roleName,
-        permissions: details.permissions,
+        role: details.role,
         created_at: details.user.created_at,
       },
     });
